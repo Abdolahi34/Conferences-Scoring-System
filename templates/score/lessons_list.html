@@ -1,0 +1,43 @@
+{% extends 'score/score_base.html' %}
+
+{% block center_title %}لیست دروس{% endblock %}
+{% block center_subtitle %}درس مورد نظرتان را انتخاب کنید{% endblock %}
+
+{% block main_section %}
+    <section>
+        <div class="card">
+{#            <div class="card-header">#}
+{#                <h3 class="card-title">درس ها</h3>#}
+
+{#                <div class="card-tools">#}
+{#                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">#}
+{#                        <i class="fas fa-minus"></i>#}
+{#                    </button>#}
+{#                </div>#}
+{#            </div>#}
+            <div class="card-body p-0">
+                <table class="table table-striped projects">
+                    <thead>
+                    <tr>
+                        <th class="text-2xl" style="text-align: right; direction: rtl">
+                            نام درس
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        {% for lesson in lessons %}
+                            <td style="text-align: right; direction: rtl">
+                                <a class="text-lg" href="#" target="_blank">
+                                    {{ lesson }}
+                                </a>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </section>
+{% endblock %}
