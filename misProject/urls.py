@@ -15,8 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
+from django.conf.urls.static import static
+from django.conf import settings
+from django.views.generic.base import RedirectView
+
+app_name = 'misProject'
 urlpatterns = [
+    path('', RedirectView.as_view(pattern_name='score:score_lessons')),
+    path('score/', include('score.urls')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+admin.site.site_header = 'پیشخوان مدیریت سامانه ثبت امتیاز'
+admin.site.site_title = 'سامانه ثبت امتیاز'
+admin.site.index_title = 'پیشخوان مدیریت'
