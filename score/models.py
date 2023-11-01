@@ -14,6 +14,7 @@ class Question(models.Model):
     class Meta:
         verbose_name = 'سوال'
         verbose_name_plural = 'سوالات'
+
     title = models.CharField(max_length=100, verbose_name='عنوان', help_text='عنوان نمایشی به جای لیست سوالات')
     question_list = ArrayField(models.CharField(max_length=200), size=5, verbose_name='سوالات ارزیابی ارائه')
 
@@ -60,8 +61,9 @@ class Point(models.Model):
     class Meta:
         verbose_name = 'امتیاز'
         verbose_name_plural = 'امتیازات'
+
     lesson = models.ForeignKey(Presentation, on_delete=models.SET_NULL, null=True, editable=False,
-                                    verbose_name='امتیاز دهنده', related_name='point_point_giver')
+                               verbose_name='امتیاز دهنده', related_name='point_point_giver')
     point_giver = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, editable=False,
                                     verbose_name='امتیاز گیرنده', related_name='point_point_receiver')
     point_list = ArrayField(models.IntegerField(), size=5, verbose_name='نمره سوالات')
