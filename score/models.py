@@ -67,7 +67,8 @@ class Point(models.Model):
                                      verbose_name='مشخصات ارائه', related_name='point_lesson')
     point_giver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                     verbose_name='امتیاز دهنده', related_name='point_point_giver')
-    point_list = ArrayField(models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)]), verbose_name='نمره سوالات')
+    point_list = ArrayField(models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)]),
+                            verbose_name='نمره سوالات')
     point_avr = models.FloatField(editable=False, blank=True, null=True)
 
     def clean(self):
