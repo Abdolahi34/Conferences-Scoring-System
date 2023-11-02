@@ -1,6 +1,6 @@
 {% extends 'score/score_base.html' %}
 
-{% block center_title %}لیست دروس{% endblock %}
+{% block center_title %}لیست دانشجویان درس {{ lesson }}{% endblock %}
 {% block center_subtitle %}درس مورد نظرتان را انتخاب کنید{% endblock %}
 
 {% block main_section %}
@@ -20,16 +20,16 @@
                     <thead>
                     <tr>
                         <th class="text-2xl" style="text-align: right; direction: rtl">
-                            نام درس
+                            نام دانشجو
                         </th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        {% for lesson in lessons %}
+                        {% for user in users %}
                             <td style="text-align: right; direction: rtl">
-                                <a class="text-lg" href="{% url 'score:users' lesson.id %}" target="_blank">
-                                    {{ lesson }}
+                                <a class="text-lg" href="{% url 'score:register_point' group_id=lesson.id  user_id=user.id  %}" target="_blank">
+                                    {{ user }}
                                 </a>
                             </td>
                         {% endfor %}
