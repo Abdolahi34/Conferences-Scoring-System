@@ -21,7 +21,6 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.views.generic.base import RedirectView
 
-app_name = 'misProject'
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='score:score_lessons')),
     path('score/', include('score.urls')),
