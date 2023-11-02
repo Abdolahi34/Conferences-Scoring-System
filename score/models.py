@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinValueValidator, MaxValueValidator
 import numpy
 import logging
 
@@ -16,7 +17,7 @@ class Question(models.Model):
         verbose_name_plural = 'سوالات'
 
     title = models.CharField(max_length=100, verbose_name='عنوان', help_text='عنوان نمایشی به جای لیست سوالات')
-    question_list = ArrayField(models.CharField(max_length=200), size=5, verbose_name='سوالات ارزیابی ارائه')
+    question_list = ArrayField(models.CharField(max_length=200), verbose_name='سوالات ارزیابی ارائه')
 
     def __str__(self):
         return self.title
@@ -24,7 +25,7 @@ class Question(models.Model):
     def clean(self):
         errors = {}
 
-        if len(self.question_list) < 5:
+        if len(self.question_list) != 5:
             errors['question_list'] = '5 سوال باید تعریف کنید'
         raise ValidationError(errors)
 
@@ -34,7 +35,7 @@ class Presentation(models.Model):
         verbose_name = 'ارائه'
         verbose_name_plural = 'ارائه ها'
 
-    group_name = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, verbose_name='نام گروه (درس)')
+    lesson = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, verbose_name='نام گروه (درس)')
     subject = models.CharField(max_length=100, verbose_name='موضوع ارائه')
     presenter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='ارائه کننده')
     questions = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, verbose_name='سوالات ارزیابی ارائه')
@@ -47,12 +48,12 @@ class Presentation(models.Model):
     date_modified = models.DateTimeField(auto_now=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
-        return f'درس {self.group_name} - {self.subject}'
+        return f'درس {self.lesson} - {self.subject}'
 
     def clean(self):
         errors = {}
         # بررسی اینکه دانشجویان فقط در درسی که اسمشان در آن هست بتوانند ارائه بدهند
-        if self.presenter not in User.objects.filter(groups__name=self.group_name):
+        if self.presenter not in User.objects.filter(groups__name=self.lesson):
             errors['presenter'] = 'دانشجو مورد نظر در لیست دانشجویان این درس نیست'
         raise ValidationError(errors)
 
@@ -62,16 +63,16 @@ class Point(models.Model):
         verbose_name = 'امتیاز'
         verbose_name_plural = 'امتیازات'
 
-    lesson = models.ForeignKey(Presentation, on_delete=models.SET_NULL, null=True, editable=False,
-                               verbose_name='امتیاز دهنده', related_name='point_point_giver')
-    point_giver = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, editable=False,
-                                    verbose_name='امتیاز گیرنده', related_name='point_point_receiver')
-    point_list = ArrayField(models.IntegerField(), size=5, verbose_name='نمره سوالات')
+    presentation = models.ForeignKey(Presentation, on_delete=models.SET_NULL, null=True, editable=False,
+                                     verbose_name='مشخصات ارائه', related_name='point_lesson')
+    point_giver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
+                                    verbose_name='امتیاز دهنده', related_name='point_point_giver')
+    point_list = ArrayField(models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)]), verbose_name='نمره سوالات')
     point_avr = models.FloatField(editable=False, blank=True, null=True)
 
     def clean(self):
         errors = {}
-        if len(self.point_list) < 5:
+        if len(self.point_list) != 5:
             errors['point_list'] = 'به تمام سوالات باید امتیاز دهید'
         raise ValidationError(errors)
 
