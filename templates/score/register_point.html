@@ -1,0 +1,64 @@
+{% extends 'score/score_base.html' %}
+
+{% block center_title %}ثبت امتیاز ارائه{% endblock %}
+{% block center_subtitle %}
+    <span dir="rtl">ارائه با موضوع {{ presentation.subject }} توسط {{ user.first_name }} {{ user.last_name }}</span>{% endblock %}
+
+{% block main_section %}
+    <div class="col-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">سوالات</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <div class="row margin">
+                    <div class="col-sm-6" dir="rtl">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="question1" style="text-align: right">سوال 1</label>
+                                    <input type="number" class="form-control" id="question1"
+                                           placeholder="امتیاز سوال 1" min="0" max="10">
+                                    <p class="text-primary" style="direction: rtl">عددی بین 0 تا 10 وارد کنید</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="question2">سوال 2</label>
+                                    <input type="number" class="form-control" id="question2"
+                                           placeholder="امتیاز سوال 2" min="0" max="10">
+                                    <p class="text-primary" style="direction: rtl">عددی بین 0 تا 10 وارد کنید</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="question3">سوال 3</label>
+                                    <input type="number" class="form-control" id="question3"
+                                           placeholder="امتیاز سوال 3" min="0" max="10">
+                                    <p class="text-primary" style="direction: rtl">عددی بین 0 تا 10 وارد کنید</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="question4">سوال 4</label>
+                                    <input type="number" class="form-control" id="question4"
+                                           placeholder="امتیاز سوال 4" min="0" max="10">
+                                    <p class="text-primary" style="direction: rtl">عددی بین 0 تا 10 وارد کنید</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="question5">سوال 5</label>
+                                    <input type="number" class="form-control" id="question5"
+                                           placeholder="امتیاز سوال 5" min="0" max="10">
+                                    <p class="text-primary" style="direction: rtl">عددی بین 0 تا 10 وارد کنید</p>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">ارسال</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+    <!-- /.col -->
+{% endblock %}
