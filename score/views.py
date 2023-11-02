@@ -9,6 +9,11 @@ from django.core.exceptions import PermissionDenied
 from score import models
 
 
+# نمودار ارائه همه دروس
+def point_chart(request):
+    pass
+
+
 @login_required
 def lessons_list(request):
     lessons = Group.objects.all()
