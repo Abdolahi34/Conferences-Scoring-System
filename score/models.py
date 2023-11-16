@@ -1,11 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
-import numpy
 from django.core.validators import MinValueValidator
+# todo import numpy
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,17 +14,33 @@ class Question(models.Model):
         verbose_name = 'سوال'
         verbose_name_plural = 'سوالات'
 
-    title = models.CharField(max_length=100, verbose_name='عنوان', help_text='عنوان نمایشی به جای لیست سوالات')
-    question_list = ArrayField(models.CharField(max_length=200), verbose_name='سوالات ارزیابی ارائه')
+    title = models.CharField(max_length=100, unique=True, verbose_name='عنوان',
+                             help_text='عنوان نمایشی به جای لیست سوالات')
+    question_list = ArrayField(models.CharField(max_length=200), verbose_name='سوالات ارزیابی ارائه',
+                               help_text='بین سوالات از , (کاما) استفاده کنید.')  # TODO change help_text after create adminPanel
+    min_score = models.IntegerField(default=0, verbose_name='حداقل امتیاز قابل ثبت برای سوالات',
+                                    help_text='حداقل امتیازی که میتوانید وارد کنید 0 است')
+    max_score = models.IntegerField(default=10, verbose_name='حداکثر امتیاز قابل ثبت برای سوالات')
+
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
+                                verbose_name='سازنده', related_name='question_creator')
+    latest_modifier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
+                                        verbose_name='آخرین تغییر دهنده', related_name='question_latest_modifier')
+    date_created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    date_modified = models.DateTimeField(auto_now=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
         return self.title
 
     def clean(self):
         errors = {}
-
-        if len(self.question_list) != 5:
-            errors['question_list'] = '5 سوال باید تعریف کنید'
+        if len(self.question_list) < 1:
+            errors['question_list'] = 'حداقل یک سوال باید تعریف کنید'
+        if not self.min_score < self.max_score:
+            errors['min_score'] = 'حداقل امتیاز باید از حداکثر کمتر باشد'
+            errors['max_score'] = 'حداقل امتیاز باید از حداکثر کمتر باشد'
+        if self.min_score < 0:
+            errors['min_score'] = 'حداقل امتیاز نمی تواند منفی باشد'
         raise ValidationError(errors)
 
 
@@ -53,25 +67,33 @@ class Presentation(models.Model):
         verbose_name_plural = 'ارائه ها'
 
     lesson = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, verbose_name='نام گروه (درس)')
-    subject = models.CharField(max_length=100, verbose_name='موضوع ارائه')
-    presenter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='ارائه کننده')
+    subject = models.CharField(max_length=100, verbose_name='موضوع ارائه',
+                               help_text='موضوع ارائه در هر درس باید یکتا باشد')
+    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان')
     questions = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, verbose_name='سوالات ارزیابی ارائه')
+    is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
+    score_avr = models.FloatField(default=0, editable=False, blank=True, null=True)
 
-    creator = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, editable=False,
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='presentation_creator')
-    latest_modifier = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, editable=False,
+    latest_modifier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                         verbose_name='آخرین تغییر دهنده', related_name='presentation_latest_modifier')
     date_created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     date_modified = models.DateTimeField(auto_now=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
-        return f'درس {self.lesson} - {self.subject}'
+        return f'درس {self.lesson} - موضوع {self.subject}'
 
     def clean(self):
+        # Validation of student membership in the course is done in the forms.py file
+        # Validation of the uniqueness of the subject in each lesson
         errors = {}
-        # بررسی اینکه دانشجویان فقط در درسی که اسمشان در آن هست بتوانند ارائه بدهند
-        if self.presenter not in User.objects.filter(groups__name=self.lesson):
-            errors['presenter'] = 'دانشجو مورد نظر در لیست دانشجویان این درس نیست'
+        presentations = Presentation.objects.filter(lesson_id=self.lesson.id)
+        for i in presentations:
+            if i.subject == self.subject:
+                if i.id != self.id:
+                    errors['subject'] = 'موضوع در هردرس باید یکتا باشد'
+                    break
         raise ValidationError(errors)
 
 
@@ -80,25 +102,27 @@ class Score(models.Model):
         verbose_name = 'امتیاز'
         verbose_name_plural = 'امتیازات'
 
-    presentation = models.ForeignKey(Presentation, on_delete=models.SET_NULL, null=True, editable=False,
-                                     verbose_name='مشخصات ارائه', related_name='point_lesson')
-    point_giver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
-                                    verbose_name='امتیاز دهنده', related_name='point_point_giver')
-    point_list = ArrayField(models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)]),
+    presentation = models.ForeignKey(Presentation, on_delete=models.SET_NULL, null=True, verbose_name='مشخصات ارائه',
+                                     related_name='score_presentation')
+    score_giver = models.ForeignKey(Preferential, on_delete=models.SET_NULL, null=True, verbose_name='امتیاز دهنده',
+                                    related_name='score_score_giver')
+    score_list = ArrayField(models.PositiveSmallIntegerField(),
                             verbose_name='نمره سوالات')
-    point_avr = models.FloatField(editable=False, blank=True, null=True)
+
+    def __str__(self):
+        return f'امتیاز ({self.score_giver}) به {self.presentation}'
 
     def clean(self):
         errors = {}
-        if len(self.point_list) != 5:
-            errors['point_list'] = 'به تمام سوالات باید امتیاز دهید'
+        # Instead of validating the scoring of all questions, all score fields were required in the html file.
+        # Validation of the given score range
+        for i in self.score_list:
+            if not self.presentation.questions.min_score <= i <= self.presentation.questions.max_score:
+                errors[
+                    'score_list'] = f'امتیازات وارد شده باید بین بازه {self.presentation.questions.min_score} تا {self.presentation.questions.max_score} باشد'
+                break
+        # Examining student membership in the course
+        lesson_users = User.objects.filter(groups__id=self.presentation.lesson.id)
+        if self.score_giver.user not in lesson_users:
+            errors['score_giver'] = f'یوزر {self.score_giver.user.username} عضو درس موردنظر نمی باشد'
         raise ValidationError(errors)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-
-        # try:
-        self.point_avr = numpy.average(self.point_list)
-        # except Exception as e:
-        #     logger.error('The try block part encountered an error: %s', str(e), exc_info=True)
-        super(Point, self).save(*args, **kwargs)
