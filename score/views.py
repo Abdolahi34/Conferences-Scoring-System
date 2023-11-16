@@ -29,16 +29,29 @@ def lessons_list(request):
         return render(request, 'score/message_redirect.html', args)
 
 
+# Display the list of presentations of each course
 @login_required
-    # بررسی عضویت دانشجو در درس
-def presentation_list(request, lesson_id):
+def presentations_list(request, lesson_id):
+    # Examining student membership in the course
     if User.objects.filter(Q(groups__id=lesson_id) & Q(id=request.user.id)).exists():
-        lesson = Group.objects.get(id=lesson_id)
-        users = User.objects.filter(groups__id=lesson_id)
-        args = {'lesson': lesson, 'users': users}
-        return render(request, 'score/users_list.html', args)
+        presentations = models.Presentation.objects.filter(Q(lesson_id=lesson_id) & Q(is_active=True))
+        # Checking the existence and activeness of the presentation
+        if presentations.exists():
+            lesson = Group.objects.get(id=lesson_id)
+            args = {'lesson': lesson, 'presentations': presentations}
+            return render(request, 'score/presentations_list.html', args)
+        else:
+            args = {
+                'message': 'ارائه ای یافت نشد.',
+                'url': reverse('score:lessons'),
+            }
+            return render(request, 'score/message_redirect.html', args)
     else:
-        raise PermissionDenied('a')
+        args = {
+            'message': 'شما عضو این درس نمی باشید.',
+            'url': reverse('score:lessons'),
+        }
+        return render(request, 'score/message_redirect.html', args)
 
 
 @method_decorator(login_required, name="dispatch")

@@ -1,6 +1,6 @@
 {% extends 'score/score_base.html' %}
 
-{% block center_title %}لیست دانشجویان درس {{ lesson }}{% endblock %}
+{% block center_title %}لیست ارائه های درس {{ lesson }}{% endblock %}
 {% block center_subtitle %}درس مورد نظرتان را انتخاب کنید{% endblock %}
 
 {% block main_section %}
@@ -20,22 +20,22 @@
                     <thead>
                     <tr>
                         <th class="text-2xl" style="text-align: right; direction: rtl">
-                            نام دانشجو
+                            موضوع ارائه
                         </th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        {% for user in users %}
+                    {% for presentation in presentations %}
+                        <tr>
                             <td style="text-align: right; direction: rtl">
                                 <a class="text-lg"
-                                   href="{% url 'score:register_point' group_id=lesson.id  user_id=user.id %}"
+                                   href="{% url 'score:register_score' lesson_id=lesson.id  presentation_id=presentation.id %}"
                                    target="_blank">
-                                    {{ user }}
+                                    {{ presentation }}
                                 </a>
                             </td>
-                        {% endfor %}
-                    </tr>
+                        </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
