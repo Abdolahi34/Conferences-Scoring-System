@@ -52,6 +52,12 @@
             <ul class="navbar-nav navbar-nav-hover ms-auto">
                 <li class="nav-item mx-2 ms-lg-6">
                     <a class="nav-link ps-2 d-flex cursor-pointer align-items-center" id="dropdownMenuPages2"
+                       data-bs-toggle="dropdown" aria-expanded="false" dir="rtl">
+                        کاربر: {{ request.user }}
+                    </a>
+                </li>
+                <li class="nav-item mx-2 ms-lg-6">
+                    <a class="nav-link ps-2 d-flex cursor-pointer align-items-center" id="dropdownMenuPages2"
                        data-bs-toggle="dropdown" aria-expanded="false" href="{% url 'admin:index' %}">
                         <i class="material-icons opacity-6 me-2 text-md">dashboard</i>
                         مدیریت
@@ -60,7 +66,8 @@
                 <li class="nav-item ms-lg-auto my-auto ms-3 ms-lg-0 mt-2 mt-lg-0">
                     <a href="{% url 'logout' %}"
                        class="btn btn-sm  bg-gradient-danger mb-0 me-1 mt-2 mt-md-0"
-                       style="min-width: 5rem; min-height: 2rem">خروج</a></li>
+                       style="min-width: 5rem; min-height: 2rem">خروج</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -75,8 +82,8 @@
         <div class="row">
             <div class="col-md-8 mx-auto">
                 <div class="text-center">
-                    <h1 class="text-white">{% block center_title %}{% endblock %}</h1>
-                    <h3 class="text-white">{% block center_subtitle %}{% endblock %}</h3>
+                    <h1 class="text-white" dir="rtl">{% block center_title %}{% endblock %}</h1>
+                    <h3 class="text-white" dir="rtl">{% block center_subtitle %}{% endblock %}</h3>
                 </div>
             </div>
         </div>
@@ -247,6 +254,9 @@
         </div>
     </div>
 </footer>
+{% block body_script %}
+
+{% endblock %}
 </body>
 
 </html>
