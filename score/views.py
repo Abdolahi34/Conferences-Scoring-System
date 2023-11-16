@@ -54,25 +54,82 @@ def presentations_list(request, lesson_id):
         return render(request, 'score/message_redirect.html', args)
 
 
+# Register points for presentation
 @method_decorator(login_required, name="dispatch")
 class RegisterScore(View):
     def get(self, *args, **kwargs):
-        # بررسی عضویت دانشجو در درس
+        # Examining student membership in the course
         if User.objects.filter(Q(groups__id=self.kwargs['lesson_id']) & Q(id=self.request.user.id)).exists():
-            # آیا یوزر فعلی به یوزری که id آن در url وارد شده امتیاز داده است؟
-            if models.Point.objects.filter(Q(presentation__lesson_id=self.kwargs['lesson_id']) & Q(
-                    presentation__presenter_id=self.kwargs['user_id']) & Q(point_giver_id=self.request.user.id)):
-                user = User.objects.get(id=self.kwargs["user_id"])
-                return HttpResponse(
-                    f'<h3 dir="rtl">به هر ارائه تنها <span style="color: red">یک مرتبه</span> میتوان امتیاز داد.<br>شما به {user.first_name} {user.last_name} رای داده اید.</h3>')
+            presentation = models.Presentation.objects.filter(Q(id=self.kwargs['presentation_id']) & Q(is_active=True))
+            # Checking the existence and activeness of the presentation
+            if presentation.exists():
+                questions = presentation.values_list('questions__question_list')
+                score_instance = models.Score.objects.filter(
+                    Q(presentation_id=self.kwargs['presentation_id']) & Q(score_giver__user_id=self.request.user.id))
+                # Checking the presence of scores with the desired specifications (for editing)
+                # Score editing mode
+                if score_instance.exists():
+                    args = {
+                        'presentation': presentation[0],
+                        'questions': list(questions)[0][0],
+                        'score_list': score_instance[0].score_list,
+                    }
+                    return render(self.request, 'score/register_score.html', args)
+                # Score Register mode
+                else:
+                    args = {
+                        'presentation': presentation[0],
+                        'questions': list(questions)[0][0],
+                    }
+                    return render(self.request, 'score/register_score.html', args)
             else:
-                presentation = get_object_or_404(models.Presentation, Q(lesson_id=self.kwargs['lesson_id']) & Q(
-                    presenter_id=self.kwargs['user_id']))
-                questions = presentation.questions
-                args = {'presentation': presentation, 'questions': questions}
-                return render(self.request, 'score/register_point.html', args)
+                args = {
+                    'message': 'ارائه یافت نشد.',
+                    'url': reverse('score:presentations', kwargs={'lesson_id': self.lesson_id}),
+                }
+                return render(self.request, 'score/message_redirect.html', args)
         else:
-            raise PermissionDenied()
+            args = {
+                'message': 'شما عضو این درس نمی باشید.',
+                'url': reverse('score:lessons'),
+            }
+            return render(self.request, 'score/message_redirect.html', args)
 
     def post(self, *args, **kwargs):
-        pass
+        posted_data = self.request.POST
+        # Build a list of points received from request.POST
+        score_text = {key: value for key, value in posted_data.items() if 'question' in key}.values()
+        score_list = [int(i) for i in list(score_text)]
+        '''
+        Considering that the score_giver field located in the score model refers to Preferential
+        score_giver__user_id was used in the query.
+        '''
+        score_instance = models.Score.objects.filter(
+            Q(presentation_id=self.kwargs['presentation_id']) & Q(score_giver__user_id=self.request.user.id))
+        posted_data_reformatted = {
+            "csrfmiddlewaretoken": posted_data['csrfmiddlewaretoken'],
+            "presentation": self.kwargs['presentation_id'],
+            "score_giver": models.Preferential.objects.get(user_id=self.request.user.id).id,
+            "score_list": score_list,
+        }
+        # If there is a score instance, it edits it. Otherwise, it creates a new instance
+        if score_instance.exists():
+            form = forms.ScoreScoreAdd(posted_data_reformatted, instance=score_instance[0])
+        else:
+            form = forms.ScoreScoreAdd(posted_data_reformatted)
+        if form.is_valid():
+            form.save()
+            args = {
+                'message': 'اطلاعات ذخیره شد.',
+                'url': reverse('score:score_chart'),
+            }
+            return render(self.request, 'score/message_redirect.html', args)
+        presentation = models.Presentation.objects.filter(id=self.kwargs['presentation_id'])
+        questions = presentation.values_list('questions__question_list')
+        args = {
+            'presentation': presentation[0],
+            'questions': list(questions)[0][0],
+            'score_list': score_list,
+            'form': form,
+        }
+        return render(self.request, 'score/register_score.html', args)

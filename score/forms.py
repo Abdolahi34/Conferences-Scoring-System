@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+from score import models
+
 
 class ScorePresentation(forms.ModelForm):
     def clean(self):
@@ -24,3 +26,8 @@ class ScorePresentation(forms.ModelForm):
         if errors:
             raise ValidationError(errors)
 
+
+class ScoreScoreAdd(forms.ModelForm):
+    class Meta:
+        model = models.Score
+        fields = '__all__'

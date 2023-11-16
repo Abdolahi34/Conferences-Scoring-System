@@ -1,0 +1,99 @@
+{% extends 'score/score_base.html' %}
+
+{% block center_title %}ثبت امتیاز ارائه{% endblock %}
+{% block center_subtitle %}
+    <span dir="rtl">ارائه با موضوع {{ presentation.subject }}</span>{% endblock %}
+
+{% block main_section %}
+    <div class="col-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">سوالات</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <div class="row margin">
+                    <div class="col-sm-6" dir="rtl">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div style="color: #dc3545">
+                                {% if form.non_field_errors %}
+                                    {{ form.non_field_errors }}
+                                    <br>
+                                {% endif %}
+                                {% if form.errors %}
+                                    {{ form.errors }}
+                                    <br>
+                                {% endif %}
+                            </div>
+                            <div id="card-body" class="card-body">
+
+                            </div>
+                            <!-- /.card-body -->
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">ارسال</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+    <!-- /.col -->
+{% endblock %}
+
+{% block body_script %}
+    <script>
+        let count_question = 0;
+
+        let div = document.createElement("div");
+        let label = document.createElement("label");
+        let input = document.createElement("input");
+        let p = document.createElement("p");
+
+        let name_question = "question" + count_question;
+        let input_count_num = count_question + 1;
+
+        {% for question in questions %}
+            div = document.createElement("div");
+            label = document.createElement("label");
+            input = document.createElement("input");
+            p = document.createElement("p");
+
+            name_question = "question" + count_question;
+            input_count_num = count_question + 1;
+
+            div.setAttribute("id", "div_id_" + name_question);
+            div.setAttribute("class", "form-group");
+            document.getElementById("card-body").appendChild(div);
+            label.setAttribute("for", name_question);
+            label.setAttribute("style", "direction: rtl");
+            label.innerText = "{{ question }}";
+            document.getElementById("div_id_" + name_question).appendChild(label);
+            input.setAttribute("id", name_question);
+            input.setAttribute("name", name_question);
+            input.setAttribute("type", "number");
+            input.setAttribute("class", "form-control");
+            input.setAttribute("placeholder", "امتیاز سوال " + input_count_num);
+            input.setAttribute("min", "{{ presentation.questions.min_score }}");
+            input.setAttribute("max", "{{ presentation.questions.max_score }}");
+            input.required = true;
+            document.getElementById("div_id_" + name_question).appendChild(input);
+            p.setAttribute("class", "text-primary");
+            p.setAttribute("style", "direction: rtl");
+            p.innerText = "عددی بین {{ presentation.questions.min_score }} تا {{ presentation.questions.max_score }} وارد کنید";
+            document.getElementById("div_id_" + name_question).appendChild(p);
+            {#TODO add help_text & errors for eich field#}
+            count_question++;
+        {% endfor %}
+
+        count_question = 0;
+        {% for score in score_list %}
+            name_question = "question" + count_question;
+            document.getElementById(name_question).setAttribute("value", "{{ score }}");
+            count_question++;
+        {% endfor %}
+    </script>
+{% endblock %}
