@@ -4,8 +4,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MinValueValidator, MaxValueValidator
 import numpy
+from django.core.validators import MinValueValidator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,6 +28,23 @@ class Question(models.Model):
         if len(self.question_list) != 5:
             errors['question_list'] = '5 سوال باید تعریف کنید'
         raise ValidationError(errors)
+
+
+class Preferential(models.Model):
+    class Meta:
+        verbose_name = 'امتیاز دهنده'
+        verbose_name_plural = 'امتیاز دهندگان'
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferential_user')
+    score_remaining = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    def __str__(self):
+        return f"کاربر {self.user} - موجودی امتیاز {self.score_remaining}"
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        # todo set score_remaining
+        super(Preferential, self).save(*args, **kwargs)
 
 
 class Presentation(models.Model):
