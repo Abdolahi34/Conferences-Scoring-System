@@ -1,12 +1,12 @@
-from django.shortcuts import render, HttpResponse, get_object_or_404
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from django.core.exceptions import PermissionDenied
+from django.urls import reverse
 
-from score import models
+from score import models, forms
 
 
 # TODO نمودار ارائه همه دروس
@@ -14,11 +14,19 @@ def score_chart(request):
     pass
 
 
+# Show the list of courses
 @login_required
 def lessons_list(request):
     lessons = Group.objects.all()
-    args = {'lessons': lessons}
-    return render(request, 'score/lessons_list.html', args)
+    if lessons.exists():
+        args = {'lessons': lessons}
+        return render(request, 'score/lessons_list.html', args)
+    else:
+        args = {
+            'message': 'درسی یافت نشد.',
+            'url': reverse('score:score_chart'),
+        }
+        return render(request, 'score/message_redirect.html', args)
 
 
 @login_required

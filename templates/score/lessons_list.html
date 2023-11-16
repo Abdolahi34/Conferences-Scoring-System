@@ -25,15 +25,15 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        {% for lesson in lessons %}
+                    {% for lesson in lessons %}
+                        <tr>
                             <td style="text-align: right; direction: rtl">
                                 <a class="text-lg" href="{% url 'score:presentations' lesson.id %}" target="_blank">
                                     {{ lesson }}
                                 </a>
                             </td>
-                        {% endfor %}
-                    </tr>
+                        </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
