@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>در حال انتقال به صفحه مورد نظر</title>
+</head>
+<body>
+<script>
+    alert("{{ message }}");
+
+    function redirect() {
+        window.location.href = "{{ url }}";
+    }
+
+    redirect();
+</script>
+</body>
+</html>
