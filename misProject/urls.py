@@ -22,7 +22,7 @@ from django.conf import settings
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    path('', RedirectView.as_view(pattern_name='score:point_chart'), name='main_page'),
+    path('', RedirectView.as_view(pattern_name='score:score_chart'), name='main_page'),
     path('score/', include('score.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),

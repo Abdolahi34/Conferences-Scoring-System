@@ -58,7 +58,7 @@ class Presentation(models.Model):
         raise ValidationError(errors)
 
 
-class Point(models.Model):
+class Score(models.Model):
     class Meta:
         verbose_name = 'امتیاز'
         verbose_name_plural = 'امتیازات'

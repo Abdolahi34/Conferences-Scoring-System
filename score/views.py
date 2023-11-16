@@ -9,8 +9,8 @@ from django.core.exceptions import PermissionDenied
 from score import models
 
 
-# نمودار ارائه همه دروس
-def point_chart(request):
+# TODO نمودار ارائه همه دروس
+def score_chart(request):
     pass
 
 
@@ -22,8 +22,8 @@ def lessons_list(request):
 
 
 @login_required
-def users_list(request, lesson_id):
     # بررسی عضویت دانشجو در درس
+def presentation_list(request, lesson_id):
     if User.objects.filter(Q(groups__id=lesson_id) & Q(id=request.user.id)).exists():
         lesson = Group.objects.get(id=lesson_id)
         users = User.objects.filter(groups__id=lesson_id)
@@ -34,7 +34,7 @@ def users_list(request, lesson_id):
 
 
 @method_decorator(login_required, name="dispatch")
-class RegisterPoint(View):
+class RegisterScore(View):
     def get(self, *args, **kwargs):
         # بررسی عضویت دانشجو در درس
         if User.objects.filter(Q(groups__id=self.kwargs['lesson_id']) & Q(id=self.request.user.id)).exists():
