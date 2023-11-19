@@ -85,7 +85,7 @@ class RegisterScore(View):
             else:
                 args = {
                     'message': 'ارائه یافت نشد.',
-                    'url': reverse('score:presentations', kwargs={'lesson_id': self.lesson_id}),
+                    'url': reverse('score:presentations', kwargs={'lesson_id': self.kwargs['lesson_id']}),
                 }
                 return render(self.request, 'score/message_redirect.html', args)
         else:

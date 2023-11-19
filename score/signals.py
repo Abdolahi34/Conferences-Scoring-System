@@ -8,9 +8,7 @@ from score import models
 # Automatic creation of Preferential instance after creation of each user
 @receiver(post_save, sender=User)
 def run_after_save_user_model(sender, instance, created, **kwargs):
-    if not models.Preferential.objects.filter(user=instance).exists():
-        preferential = models.Preferential(user=instance)
-        preferential.save()
+    pass  # todo
 
 
 # Automatic creation of Lesson instance after creation of each group
