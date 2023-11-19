@@ -3,7 +3,84 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
+import math
 
+
+# Lesson initial_score recalculation
+def get_lesson_initial_score_list(lesson_ins):
+    """
+    lesson_ins: Lesson (object)
+    """
+    presentations_count = lesson_ins.presentation_lesson.all().count()
+    max_score = lesson_ins.questions.max_score
+    if presentations_count:
+        # usable initial score = rounding(2/3 * Number of presentations * maximum score of each lesson question)
+        initial_score = math.ceil(0.666 * presentations_count * max_score)
+    else:
+        # if presentations_count = 0
+        initial_score = 0
+    question_count = len(lesson_ins.questions.question_list)
+    # return initial_score_list
+    return [initial_score for i in range(question_count)]  # The final score list
+
+
+# Creation or editing of Preferential instance, for users of certain courses, or courses of desired users
+def set_preferential(lesson_ins, initial_score_list):
+    """
+    lesson_ins: Lesson (object)
+    """
+    lesson_users = User.objects.filter(groups__id=lesson_ins.group.id)
+    if lesson_users:
+        lesson_preferentials = lesson_ins.preferential_lesson.all()
+        for lesson_user in lesson_users:
+            preferential = lesson_preferentials.filter(user_id=lesson_user.id)
+            if preferential:
+                preferential = preferential[0]
+                scores = Score.objects.filter(
+                    Q(score_giver__user_id=lesson_user.id) & Q(presentation__lesson_id=preferential.lesson.id))
+                if scores:
+                    for score in scores:
+                        # List of final scores minus scores spent
+                        i = 0
+                        for j in score.score_list:
+                            initial_score_list[i] -= j
+                            i += 1
+                preferential.score_balance = initial_score_list
+            else:
+                # Creating a Preferential instance with the highest score of this course for user
+                # who do not have a Preferential instance of this lesson
+                preferential = Preferential(user=lesson_user, lesson=preferential.lesson,
+                                            score_balance=initial_score_list)
+            preferential.save()
+
+
+# Executing this function recalculates the maximum points of the course(s) and the remaining points of the users
+def after_save_model(lessons_sent=None, lesson_sent=None, only_set_preferential=False):
+    """
+    lessons_sent: Lesson (objects)
+    lesson_sent: Lesson (object)
+    only_set_preferential: (bool) If True, the lesson initial_score will not be recalculated.
+    """
+
+    # run set_lesson_initial_score for all lessons sent and run set_preferential
+    if lessons_sent:
+        for lesson in lessons_sent:
+            initial_score_list = get_lesson_initial_score_list(lesson)
+            # set initial_score of lesson
+            lesson.initial_score = initial_score_list
+            lesson.save()
+            set_preferential(lesson, initial_score_list)
+    # run set_lesson_initial_score for one lesson sent and run set_preferential (lesson_sent has object)
+    elif not only_set_preferential:
+        initial_score_list = get_lesson_initial_score_list(lesson_sent)
+        # set initial_score of lesson
+        lesson_sent.initial_score = initial_score_list
+        lesson_sent.save()
+        set_preferential(lesson_sent, initial_score_list)
+    # run only set_preferential (lesson_sent has object)
+    else:
+        initial_score_list = get_lesson_initial_score_list(lesson_sent)
+        set_preferential(lesson_sent, initial_score_list)
 
 
 class Question(models.Model):
