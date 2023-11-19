@@ -5,6 +5,16 @@ from django.core.exceptions import ValidationError
 from score import models
 
 
+class ScoreLesson(forms.ModelForm):
+    class Meta:
+        model = models.Lesson
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['questions'].required = True
+
+
 class ScorePresentation(forms.ModelForm):
     def clean(self):
         """

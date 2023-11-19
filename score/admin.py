@@ -18,6 +18,11 @@ class QuestionAdmin(admin.ModelAdmin):
         super(QuestionAdmin, self).save_model(request, obj, form, change)
 
 
+@admin.register(models.Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    form = forms.ScoreLesson
+
+
 @admin.register(models.Presentation)
 class PresentationAdmin(admin.ModelAdmin):
     list_filter = ['lesson', 'is_active']
