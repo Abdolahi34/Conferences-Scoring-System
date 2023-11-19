@@ -72,11 +72,17 @@ class Preferential(models.Model):
         verbose_name = 'امتیاز دهنده'
         verbose_name_plural = 'امتیاز دهندگان'
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferential_user')
-    score_remaining = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    # The user's remaining score of each question in each lesson
+    # which user?
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='preferential_user')
+    # which lesson?
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='preferential_lesson')
+    # what grades
+    score_balance = ArrayField(models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)]),
+                               blank=True, null=True)
 
     def __str__(self):
-        return f"کاربر {self.user} - موجودی امتیاز {self.score_remaining}"
+        return f"کاربر {self.user} - {self.lesson}"
 
     def save(self, *args, **kwargs):
         self.full_clean()
