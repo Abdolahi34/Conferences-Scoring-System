@@ -95,10 +95,11 @@ class Presentation(models.Model):
         verbose_name = 'ارائه'
         verbose_name_plural = 'ارائه ها'
 
-    lesson = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, verbose_name='نام گروه (درس)')
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, verbose_name='نام گروه (درس)',
+                               related_name='presentation_lesson')
     subject = models.CharField(max_length=100, verbose_name='موضوع ارائه',
                                help_text='موضوع ارائه در هر درس باید یکتا باشد')
-    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان')
+    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
     score_avr = models.FloatField(default=0, editable=False, blank=True, null=True)
     # Confidential information fields
