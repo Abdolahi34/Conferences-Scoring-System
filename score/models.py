@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
+from django.db.models import Q
 import math
 
 
@@ -117,6 +118,15 @@ class Question(models.Model):
             errors['min_score'] = 'حداقل امتیاز نمی تواند منفی باشد'
         raise ValidationError(errors)
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        # the effect of changing the score range of the questions on the ceiling of each user's score
+        # When the lessons are saved, the after_save_model function will be executed
+        lessons = self.lesson_questions.all()
+        for lesson in lessons:
+            lesson.save()
+        super(Question, self).save(*args, **kwargs)
+
 
 # Lesson model according to Group model
 class Lesson(models.Model):
@@ -163,7 +173,18 @@ class Preferential(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        # todo set score_remaining
+        # This is a customized copy of the set_preferential function
+        # set score_balance of Preferential
+        initial_score_list = get_lesson_initial_score_list(self.lesson)
+        scores = Score.objects.filter(Q(score_giver__user_id=self.user.id) & Q(presentation__lesson_id=self.lesson.id))
+        if scores:
+            for score in scores:
+                # List of final scores minus scores spent
+                i = 0
+                for j in score.score_list:
+                    initial_score_list[i] -= j
+                    i += 1
+        self.score_balance = initial_score_list
         super(Preferential, self).save(*args, **kwargs)
 
 
@@ -201,6 +222,12 @@ class Presentation(models.Model):
                     errors['subject'] = 'موضوع در هردرس باید یکتا باشد'
                     break
         raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        # The effect of changing the number of presentations on the score ceiling of each question from the presentation
+        self.lesson.save()
+        super(Presentation, self).save(*args, **kwargs)
 
 
 class Score(models.Model):
@@ -241,3 +268,10 @@ class Score(models.Model):
             errors[
                 'score_list'] = f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست'
         raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        # Record the change of the user's score_balance in that course
+        initial_score_list = get_lesson_initial_score_list(self.presentation.lesson)
+        set_preferential(self.presentation.lesson, initial_score_list=initial_score_list)
+        super(Score, self).save(*args, **kwargs)
