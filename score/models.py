@@ -153,4 +153,14 @@ class Score(models.Model):
         lesson_users = User.objects.filter(groups__id=self.presentation.lesson.id)
         if self.score_giver.user not in lesson_users:
             errors['score_giver'] = f'یوزر {self.score_giver.user.username} عضو درس موردنظر نمی باشد'
+        # todo آیا امتیازات وارد شده کمتر یا مساوی موجودی امتیاز است؟
+        if not errors:
+            # Remaining scores in this lesson
+            score_balance = self.score_giver.lesson_score.get(lesson_id=self.presentation.lesson.id).score_balance
+            wrong_scores_list_index = []
+            for i in range(score_balance.count()):
+                if score_balance[i] < self.score_list[i]:
+                    wrong_scores_list_index.append(i + 1)
+            errors[
+                'score_list'] = f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست'
         raise ValidationError(errors)
