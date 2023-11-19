@@ -3,10 +3,7 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
-# todo import numpy
-import logging
 
-logger = logging.getLogger(__name__)
 
 
 class Question(models.Model):
@@ -21,7 +18,7 @@ class Question(models.Model):
     min_score = models.IntegerField(default=0, verbose_name='حداقل امتیاز قابل ثبت برای سوالات',
                                     help_text='حداقل امتیازی که میتوانید وارد کنید 0 است')
     max_score = models.IntegerField(default=10, verbose_name='حداکثر امتیاز قابل ثبت برای سوالات')
-
+    # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='question_creator')
     latest_modifier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
@@ -98,7 +95,7 @@ class Presentation(models.Model):
     presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
     score_avr = models.FloatField(default=0, editable=False, blank=True, null=True)
-
+    # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='presentation_creator')
     latest_modifier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
@@ -107,7 +104,7 @@ class Presentation(models.Model):
     date_modified = models.DateTimeField(auto_now=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
-        return f'درس {self.lesson} - موضوع {self.subject}'
+        return f'{self.lesson} - موضوع {self.subject}'
 
     def clean(self):
         # Validation of student membership in the course is done in the forms.py file
@@ -131,8 +128,7 @@ class Score(models.Model):
                                      related_name='score_presentation')
     score_giver = models.ForeignKey(Preferential, on_delete=models.SET_NULL, null=True, verbose_name='امتیاز دهنده',
                                     related_name='score_score_giver')
-    score_list = ArrayField(models.PositiveSmallIntegerField(),
-                            verbose_name='نمره سوالات')
+    score_list = ArrayField(models.PositiveSmallIntegerField(), verbose_name='نمره سوالات')
 
     def __str__(self):
         return f'امتیاز ({self.score_giver}) به {self.presentation}'
