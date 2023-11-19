@@ -63,7 +63,7 @@ class RegisterScore(View):
             presentation = models.Presentation.objects.filter(Q(id=self.kwargs['presentation_id']) & Q(is_active=True))
             # Checking the existence and activeness of the presentation
             if presentation.exists():
-                questions = presentation.values_list('questions__question_list')
+                questions = presentation[0].lesson.questions.question_list
                 score_instance = models.Score.objects.filter(
                     Q(presentation_id=self.kwargs['presentation_id']) & Q(score_giver__user_id=self.request.user.id))
                 # Checking the presence of scores with the desired specifications (for editing)
@@ -71,7 +71,7 @@ class RegisterScore(View):
                 if score_instance.exists():
                     args = {
                         'presentation': presentation[0],
-                        'questions': list(questions)[0][0],
+                        'questions': questions,
                         'score_list': score_instance[0].score_list,
                     }
                     return render(self.request, 'score/register_score.html', args)
@@ -79,7 +79,7 @@ class RegisterScore(View):
                 else:
                     args = {
                         'presentation': presentation[0],
-                        'questions': list(questions)[0][0],
+                        'questions': questions,
                     }
                     return render(self.request, 'score/register_score.html', args)
             else:
@@ -125,10 +125,10 @@ class RegisterScore(View):
             }
             return render(self.request, 'score/message_redirect.html', args)
         presentation = models.Presentation.objects.filter(id=self.kwargs['presentation_id'])
-        questions = presentation.values_list('questions__question_list')
+        questions = presentation[0].lesson.questions.question_list
         args = {
             'presentation': presentation[0],
-            'questions': list(questions)[0][0],
+            'questions': questions,
             'score_list': score_list,
             'form': form,
         }

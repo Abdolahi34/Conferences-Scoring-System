@@ -96,7 +96,6 @@ class Presentation(models.Model):
     subject = models.CharField(max_length=100, verbose_name='موضوع ارائه',
                                help_text='موضوع ارائه در هر درس باید یکتا باشد')
     presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان')
-    questions = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, verbose_name='سوالات ارزیابی ارائه')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
     score_avr = models.FloatField(default=0, editable=False, blank=True, null=True)
 
@@ -143,9 +142,9 @@ class Score(models.Model):
         # Instead of validating the scoring of all questions, all score fields were required in the html file.
         # Validation of the given score range
         for i in self.score_list:
-            if not self.presentation.questions.min_score <= i <= self.presentation.questions.max_score:
+            if not self.presentation.lesson.questions.min_score <= i <= self.presentation.lesson.questions.max_score:
                 errors[
-                    'score_list'] = f'امتیازات وارد شده باید بین بازه {self.presentation.questions.min_score} تا {self.presentation.questions.max_score} باشد'
+                    'score_list'] = f'امتیازات وارد شده باید بین بازه {self.presentation.lesson.questions.min_score} تا {self.presentation.lesson.questions.max_score} باشد'
                 break
         # Examining student membership in the course
         lesson_users = User.objects.filter(groups__id=self.presentation.lesson.id)

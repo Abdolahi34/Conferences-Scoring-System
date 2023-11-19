@@ -77,13 +77,13 @@
             input.setAttribute("type", "number");
             input.setAttribute("class", "form-control");
             input.setAttribute("placeholder", "امتیاز سوال " + input_count_num);
-            input.setAttribute("min", "{{ presentation.questions.min_score }}");
-            input.setAttribute("max", "{{ presentation.questions.max_score }}");
+            input.setAttribute("min", "{{ presentation.lesson.questions.min_score }}");
+            input.setAttribute("max", "{{ presentation.lesson.questions.max_score }}");
             input.required = true;
             document.getElementById("div_id_" + name_question).appendChild(input);
             p.setAttribute("class", "text-primary");
             p.setAttribute("style", "direction: rtl");
-            p.innerText = "عددی بین {{ presentation.questions.min_score }} تا {{ presentation.questions.max_score }} وارد کنید";
+            p.innerText = "عددی بین {{ presentation.lesson.questions.min_score }} تا {{ presentation.lesson.questions.max_score }} وارد کنید";
             document.getElementById("div_id_" + name_question).appendChild(p);
             {#TODO add help_text & errors for eich field#}
             count_question++;
