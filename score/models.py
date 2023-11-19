@@ -44,6 +44,32 @@ class Question(models.Model):
         raise ValidationError(errors)
 
 
+# Lesson model according to Group model
+class Lesson(models.Model):
+    class Meta:
+        verbose_name = 'درس'
+        verbose_name_plural = 'درس ها'
+
+    group = models.OneToOneField(Group, on_delete=models.CASCADE, editable=False, related_name='lesson_group')
+    questions = models.ForeignKey(Question, on_delete=models.SET_NULL, blank=True, null=True,
+                                  verbose_name='سوالات ارزیابی ارائه', related_name='lesson_questions')
+    # The maximum score that can be used by the user for each question of each lesson
+    initial_score = ArrayField(models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)]),
+                               editable=False, blank=True, null=True)
+
+    def __str__(self):
+        return f"درس {self.group}"
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        # set initial_score of Lesson
+        initial_score_list = get_lesson_initial_score_list(self)
+        self.initial_score = initial_score_list
+        set_preferential(self, initial_score_list)
+        super(Lesson, self).save(*args, **kwargs)
+
+
+# Preferential model according to User model
 class Preferential(models.Model):
     class Meta:
         verbose_name = 'امتیاز دهنده'
