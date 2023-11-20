@@ -9,23 +9,23 @@ from score import models
 @receiver(post_save, sender=User)
 def run_after_save_user_model(sender, instance, created, **kwargs):
     user_groups = instance.groups.all()
-    if user_groups:
-        for user_group in user_groups:
-            lesson = user_group.lesson_group.all()
-            if lesson:
-                lesson = lesson[0]
-                initial_score_list = models.get_lesson_initial_score_list(user_group)
-                models.set_preferential(lesson, initial_score_list)
-            else:
-                user_group.save()
-                lesson = user_group.lesson_group.all()[0]
-                initial_score_list = models.get_lesson_initial_score_list(user_group)
-                models.set_preferential(lesson, initial_score_list)
+    for user_group in user_groups:
+        lesson = models.Lesson.objects.filter(group_id=user_group.id)
+        if lesson:
+            lesson = lesson[0]
+            initial_score_list = models.get_lesson_initial_score_list(lesson)
+            models.set_preferential(lesson, initial_score_list)
+        else:
+            user_group.save()
+            lesson = user_group.lesson_group.all()[0]
+            initial_score_list = models.get_lesson_initial_score_list(user_group)
+            models.set_preferential(lesson, initial_score_list)
 
 
 # Automatic creation of Lesson instance after creation of each group
 @receiver(post_save, sender=Group)
 def run_after_save_group_model(sender, instance, created, **kwargs):
-    if created:
+    lesson = models.Lesson.objects.filter(group_id=instance.id)
+    if not lesson:
         lesson = models.Lesson(group=instance)
         lesson.save()

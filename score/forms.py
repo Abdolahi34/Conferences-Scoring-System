@@ -24,7 +24,8 @@ class ScorePresentation(forms.ModelForm):
         super(ScorePresentation, self).clean()
         # Examining student membership in the course
         new_presenters = self.cleaned_data['presenter']
-        lesson_users = User.objects.filter(groups__id=self.cleaned_data['lesson'].id)
+        # self.cleaned_data['lesson'] = lesson instance
+        lesson_users = User.objects.filter(groups__id=self.cleaned_data['lesson'].group.id)
         users_not_in_lesson = [i for i in new_presenters if i not in lesson_users]
         errors = {}
         if users_not_in_lesson:
