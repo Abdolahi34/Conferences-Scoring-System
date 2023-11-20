@@ -8,7 +8,19 @@ from score import models
 # Automatic creation of Preferential instance after creation of each user
 @receiver(post_save, sender=User)
 def run_after_save_user_model(sender, instance, created, **kwargs):
-    pass  # todo
+    user_groups = instance.groups.all()
+    if user_groups:
+        for user_group in user_groups:
+            lesson = user_group.lesson_group.all()
+            if lesson:
+                lesson = lesson[0]
+                initial_score_list = models.get_lesson_initial_score_list(user_group)
+                models.set_preferential(lesson, initial_score_list)
+            else:
+                user_group.save()
+                lesson = user_group.lesson_group.all()[0]
+                initial_score_list = models.get_lesson_initial_score_list(user_group)
+                models.set_preferential(lesson, initial_score_list)
 
 
 # Automatic creation of Lesson instance after creation of each group
