@@ -57,35 +57,6 @@ def set_preferential(lesson_ins, initial_score_list):
             preferential.save()
 
 
-# Executing this function recalculates the maximum points of the course(s) and the remaining points of the users
-def after_save_model(lessons_sent=None, lesson_sent=None, only_set_preferential=False):
-    """
-    lessons_sent: Lesson (objects)
-    lesson_sent: Lesson (object)
-    only_set_preferential: (bool) If True, the lesson initial_score will not be recalculated.
-    """
-
-    # run set_lesson_initial_score for all lessons sent and run set_preferential
-    if lessons_sent:
-        for lesson in lessons_sent:
-            initial_score_list = get_lesson_initial_score_list(lesson)
-            # set initial_score of lesson
-            lesson.initial_score = initial_score_list
-            lesson.save()
-            set_preferential(lesson, initial_score_list)
-    # run set_lesson_initial_score for one lesson sent and run set_preferential (lesson_sent has object)
-    elif not only_set_preferential:
-        initial_score_list = get_lesson_initial_score_list(lesson_sent)
-        # set initial_score of lesson
-        lesson_sent.initial_score = initial_score_list
-        lesson_sent.save()
-        set_preferential(lesson_sent, initial_score_list)
-    # run only set_preferential (lesson_sent has object)
-    else:
-        initial_score_list = get_lesson_initial_score_list(lesson_sent)
-        set_preferential(lesson_sent, initial_score_list)
-
-
 class Question(models.Model):
     class Meta:
         verbose_name = 'سوال'
