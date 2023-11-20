@@ -106,10 +106,11 @@ class RegisterScore(View):
         '''
         score_instance = models.Score.objects.filter(
             Q(presentation_id=self.kwargs['presentation_id']) & Q(score_giver__user_id=self.request.user.id))
+        lesson = models.Presentation.objects.filter(id=self.kwargs['presentation_id'])[0].lesson
         posted_data_reformatted = {
             "csrfmiddlewaretoken": posted_data['csrfmiddlewaretoken'],
             "presentation": self.kwargs['presentation_id'],
-            "score_giver": models.Preferential.objects.get(user_id=self.request.user.id).id,
+            "score_giver": models.Preferential.objects.get(Q(user_id=self.request.user.id) & Q(lesson_id=lesson.id)).id,
             "score_list": score_list,
         }
         # If there is a score instance, it edits it. Otherwise, it creates a new instance

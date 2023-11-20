@@ -164,7 +164,7 @@ class Preferential(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='preferential_user')
     # which lesson?
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='preferential_lesson')
-    # what grades
+    # what grades?
     score_balance = ArrayField(models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)]),
                                blank=True, null=True)
 
@@ -254,15 +254,15 @@ class Score(models.Model):
                     'score_list'] = f'امتیازات وارد شده باید بین بازه {self.presentation.lesson.questions.min_score} تا {self.presentation.lesson.questions.max_score} باشد'
                 break
         # Examining student membership in the course
-        lesson_users = User.objects.filter(groups__id=self.presentation.lesson.id)
+        lesson_users = User.objects.filter(groups__id=self.presentation.lesson.group.id)
         if self.score_giver.user not in lesson_users:
             errors['score_giver'] = f'یوزر {self.score_giver.user.username} عضو درس موردنظر نمی باشد'
-        # todo آیا امتیازات وارد شده کمتر یا مساوی موجودی امتیاز است؟
+        # Validate that the scores entered are less than or equal to the scores balance
         if not errors:
             # Remaining scores in this lesson
-            score_balance = self.score_giver.lesson_score.get(lesson_id=self.presentation.lesson.id).score_balance
+            score_balance = self.score_giver.score_balance
             wrong_scores_list_index = []
-            for i in range(score_balance.count()):
+            for i in range(len(score_balance)):
                 if score_balance[i] < self.score_list[i]:
                     wrong_scores_list_index.append(i + 1)
             errors[
