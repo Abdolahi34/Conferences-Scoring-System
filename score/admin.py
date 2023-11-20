@@ -22,6 +22,9 @@ class QuestionAdmin(admin.ModelAdmin):
 class LessonAdmin(admin.ModelAdmin):
     form = forms.ScoreLesson
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(models.Presentation)
 class PresentationAdmin(admin.ModelAdmin):
