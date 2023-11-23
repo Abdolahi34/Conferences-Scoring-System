@@ -15,11 +15,13 @@ def get_lesson_initial_score_list(lesson_ins):
     presentations_count = lesson_ins.presentation_lesson.all().count()
     if lesson_ins.questions:
         max_score = lesson_ins.questions.max_score
+        min_score = lesson_ins.questions.min_score
+        score_amount = max_score - min_score
+        # if presentations_count != 0
         if presentations_count:
-            # usable initial score = rounding(2/3 * Number of presentations * maximum score of each lesson question)
-            initial_score = math.ceil(0.666 * presentations_count * max_score)
+            # usable initial score = rounding(2/3 * Number of presentations * maximum score - minimum score of each lesson question)
+            initial_score = math.ceil(0.666 * presentations_count * score_amount)
         else:
-            # if presentations_count = 0
             initial_score = 0
         question_count = len(lesson_ins.questions.question_list)
         # return initial_score_list
@@ -149,7 +151,7 @@ class Preferential(models.Model):
         self.full_clean()
         # This is a customized copy of the set_preferential function
         # set score_balance of Preferential
-        initial_score_list = get_lesson_initial_score_list(self.lesson)
+        initial_score_list = self.lesson.initial_score
         scores = Score.objects.filter(Q(score_giver__user_id=self.user.id) & Q(presentation__lesson_id=self.lesson.id))
         for score in scores:
             # List of final scores minus scores spent
@@ -245,6 +247,5 @@ class Score(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         # Record the change of the user's score_balance in that course
-        initial_score_list = get_lesson_initial_score_list(self.presentation.lesson)
-        set_preferential(self.presentation.lesson, initial_score_list)
+        set_preferential(self.presentation.lesson, self.presentation.lesson.initial_score)
         super(Score, self).save(*args, **kwargs)
