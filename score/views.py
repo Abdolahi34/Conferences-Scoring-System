@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.views import View
@@ -134,3 +134,10 @@ class RegisterScore(View):
             'form': form,
         }
         return render(self.request, 'score/register_score.html', args)
+
+
+def save_lessons(request):
+    lessons = models.Lesson.objects.all()
+    for lesson in lessons:
+        lesson.save()
+    return HttpResponse('Lessons saved.')
