@@ -12,6 +12,9 @@ class ScoreLesson(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Compulsory selection of questions for the lesson
+        # In order to create lessons by signal, without errors, (after saving the group model),
+        # the forcing of the questions field has been removed
         self.fields['questions'].required = True
 
 

@@ -95,7 +95,8 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        # the effect of changing the score range of the questions on the ceiling of each user's score
+        # the effect of changing the score range and Number of questions of the questions on the ceiling of each user's score
+        # if on update mode
         if self.id:
             lessons = self.lesson_questions.all()
             for lesson in lessons:
@@ -121,7 +122,14 @@ class Lesson(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        """
+        When the save() function of the Lesson model is executed when the Presentation model is saved.
+        When an instance of the Presentation model is created, it is not yet stored in the database,
+        until it is counted in the number of presentations when calculating the lesson initial_score.
+        So by adding an arg to the save function, we manage to add one to the number of presentations at this time.
+        """
         # set initial_score of Lesson
+        # if on update mode
         if self.id:
             initial_score_list = get_lesson_initial_score_list(self)
             self.initial_score = initial_score_list
