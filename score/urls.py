@@ -1,10 +1,11 @@
 from django.urls import path
+from django.views.generic.base import RedirectView
 
 from score import views
 
 app_name = 'score'
 urlpatterns = [
-    path('', views.score_chart, name='score_chart'),  # TODO create score chart
+    path('', RedirectView.as_view(url='lessons/'), name='score_chart'),  # TODO create score chart
     path('lessons/', views.lessons_list, name='lessons'),
     path('save-lessons/', views.save_lessons, name='save_lessons'),
     path('lessons/<int:group_id>/', views.presentations_list, name='presentations'),
