@@ -93,6 +93,7 @@ class Question(models.Model):
             errors['min_score'] = 'حداقل امتیاز نمی تواند منفی باشد'
         raise ValidationError(errors)
 
+    '''
     def save(self, *args, **kwargs):
         self.full_clean()
         # the effect of changing the score range and Number of questions of the questions on the ceiling of each user's score
@@ -102,6 +103,7 @@ class Question(models.Model):
             for lesson in lessons:
                 lesson.save()
         super(Question, self).save(*args, **kwargs)
+        '''
 
 
 # Lesson model according to Group model
@@ -133,7 +135,7 @@ class Lesson(models.Model):
         if self.id:
             initial_score_list = get_lesson_initial_score_list(self)
             self.initial_score = initial_score_list
-            set_preferential(self, initial_score_list)
+            # set_preferential(self, initial_score_list)
         super(Lesson, self).save(*args, **kwargs)
 
 
@@ -209,7 +211,7 @@ class Presentation(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         # The effect of changing the number of presentations on the score ceiling of each question from the presentation
-        self.lesson.save()
+        # self.lesson.save()
         super(Presentation, self).save(*args, **kwargs)
 
 
@@ -255,5 +257,11 @@ class Score(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         # Record the change of the user's score_balance in that course
-        set_preferential(self.presentation.lesson, self.presentation.lesson.initial_score)
+        # set_preferential(self.presentation.lesson, self.presentation.lesson.initial_score)
+        '''
+        presentation_score = self.presentation.score
+        for i in self.score_list:
+            presentation_score += i
+        self.presentation.save()
+        '''
         super(Score, self).save(*args, **kwargs)
