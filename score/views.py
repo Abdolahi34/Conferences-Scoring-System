@@ -31,10 +31,10 @@ def lessons_list(request):
 
 # Display the list of presentations of each course
 @login_required
-def presentations_list(request, lesson_id):
+def presentations_list(request, group_id):
     # Examining student membership in the course
-    if User.objects.filter(Q(groups__id=lesson_id) & Q(id=request.user.id)).exists():
-        presentations = models.Presentation.objects.filter(Q(lesson_id=lesson_id) & Q(is_active=True))
+    if User.objects.filter(Q(groups__id=group_id) & Q(id=request.user.id)).exists():
+        presentations = models.Presentation.objects.filter(Q(lesson__group_id=group_id) & Q(is_active=True))
         # Checking the existence and activeness of the presentation
         if presentations.exists():
             lesson = Group.objects.get(id=lesson_id)
@@ -59,7 +59,6 @@ def presentations_list(request, lesson_id):
 class RegisterScore(View):
     def get(self, *args, **kwargs):
         # Examining student membership in the course
-        if User.objects.filter(Q(groups__id=self.kwargs['lesson_id']) & Q(id=self.request.user.id)).exists():
             presentation = models.Presentation.objects.filter(Q(id=self.kwargs['presentation_id']) & Q(is_active=True))
             # Checking the existence and activeness of the presentation
             if presentation.exists():
@@ -76,6 +75,7 @@ class RegisterScore(View):
                     }
                     return render(self.request, 'score/register_score.html', args)
                 # Score Register mode
+        if User.objects.filter(Q(groups__id=self.kwargs['group_id']) & Q(id=self.request.user.id)).exists():
                 else:
                     args = {
                         'presentation': presentation[0],

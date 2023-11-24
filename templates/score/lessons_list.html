@@ -28,7 +28,7 @@
                     {% for lesson in lessons %}
                         <tr>
                             <td style="text-align: right; direction: rtl">
-                                <a class="text-lg" href="{% url 'score:presentations' lesson.id %}" target="_blank">
+                                <a class="text-lg" href="{% url 'score:presentations' group_id=lesson.group.id %}">
                                     {{ lesson }}
                                 </a>
                             </td>

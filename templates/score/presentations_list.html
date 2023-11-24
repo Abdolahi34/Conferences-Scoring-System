@@ -29,8 +29,7 @@
                         <tr>
                             <td style="text-align: right; direction: rtl">
                                 <a class="text-lg"
-                                   href="{% url 'score:register_score' lesson_id=lesson.id  presentation_id=presentation.id %}"
-                                   target="_blank">
+                                   href="{% url 'score:register_score' group_id=lesson.group.id  presentation_id=presentation.id %}">
                                     {{ presentation }}
                                 </a>
                             </td>
