@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.views import View
@@ -32,6 +32,8 @@ def lessons_list(request):
 # Display the list of presentations of each course
 @login_required
 def presentations_list(request, group_id):
+    # Raise 404 error when not available
+    get_object_or_404(models.Lesson, group_id=group_id)
     # Examining student membership in the course
     if User.objects.filter(Q(groups__id=group_id) & Q(id=request.user.id)).exists():
         presentations = models.Presentation.objects.filter(Q(lesson__group_id=group_id) & Q(is_active=True))
@@ -58,6 +60,8 @@ def presentations_list(request, group_id):
 @method_decorator(login_required, name="dispatch")
 class RegisterScore(View):
     def get(self, *args, **kwargs):
+        # Raise 404 error when not available
+        get_object_or_404(models.Lesson, group_id=self.kwargs['group_id'])
         # Examining student membership in the course
         if User.objects.filter(Q(groups__id=self.kwargs['group_id']) & Q(id=self.request.user.id)).exists():
             # Lack of access to scoring for absentees
