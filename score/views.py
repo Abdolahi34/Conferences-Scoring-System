@@ -151,9 +151,16 @@ class RegisterScore(View):
             return render(self.request, 'score/message_redirect.html', args)
         presentation = models.Presentation.objects.filter(id=self.kwargs['presentation_id'])
         questions = presentation[0].lesson.questions.question_list
+        preferential = models.Preferential.objects.get(
+            Q(user_id=self.request.user.id) & Q(lesson_id=presentation[0].lesson.id))
+        score_balance = preferential.score_balance
+        score_balance_dict = {}
+        for key in range(1, len(score_balance) + 1):
+            score_balance_dict[key] = score_balance[key - 1]
         args = {
             'presentation': presentation[0],
             'questions': questions,
+            'score_balances': score_balance_dict,
             'score_list': score_list,
             'form': form,
         }

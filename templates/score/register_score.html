@@ -13,6 +13,13 @@
             <!-- /.card-header -->
             <div class="card-body">
                 <div class="row margin">
+                    <div dir="rtl" class="callout callout-info">
+                        <h5>امتیاز باقی مانده شما</h5>
+
+                        {% for key, value in score_balances.items %}
+                            <p>امتیاز شما در سوال {{ key }} : <b style="font-size: large">{{ value }}</b></p>
+                        {% endfor %}
+                    </div>
                     <div class="col-sm-6" dir="rtl">
                         <form method="post">
                             {% csrf_token %}
