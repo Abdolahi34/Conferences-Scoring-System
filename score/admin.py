@@ -35,7 +35,7 @@ class PresentationAdmin(admin.ModelAdmin):
     list_display = ['lesson', 'subject', 'is_active', 'creator', 'latest_modifier', 'date_created', 'date_modified']
     ordering = ['-is_active', '-id']
     list_display_links = ['lesson', 'subject']
-    filter_horizontal = ['presenter']
+    filter_horizontal = ['presenter', 'absent']
     # To validate some fields
     form = forms.ScorePresentation
 

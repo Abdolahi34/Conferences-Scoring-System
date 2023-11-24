@@ -59,33 +59,53 @@ def presentations_list(request, group_id):
 class RegisterScore(View):
     def get(self, *args, **kwargs):
         # Examining student membership in the course
-            presentation = models.Presentation.objects.filter(Q(id=self.kwargs['presentation_id']) & Q(is_active=True))
-            # Checking the existence and activeness of the presentation
-            if presentation.exists():
-                questions = presentation[0].lesson.questions.question_list
-                score_instance = models.Score.objects.filter(
-                    Q(presentation_id=self.kwargs['presentation_id']) & Q(score_giver__user_id=self.request.user.id))
-                # Checking the presence of scores with the desired specifications (for editing)
-                # Score editing mode
-                if score_instance.exists():
-                    args = {
-                        'presentation': presentation[0],
-                        'questions': questions,
-                        'score_list': score_instance[0].score_list,
-                    }
-                    return render(self.request, 'score/register_score.html', args)
-                # Score Register mode
         if User.objects.filter(Q(groups__id=self.kwargs['group_id']) & Q(id=self.request.user.id)).exists():
+            # Lack of access to scoring for absentees
+            this_user = User.objects.get(id=self.request.user.id)
+            absent_users = models.Presentation.objects.get(id=self.kwargs['presentation_id']).absent.all()
+            if this_user not in absent_users:
+                presentation = models.Presentation.objects.filter(
+                    Q(id=self.kwargs['presentation_id']) & Q(is_active=True))
+                # Checking the existence and activeness of the presentation
+                if presentation.exists():
+                    questions = presentation[0].lesson.questions.question_list
+                    preferential = models.Preferential.objects.get(
+                        Q(user_id=self.request.user.id) & Q(lesson_id=presentation[0].lesson.id))
+                    score_balance = preferential.score_balance
+                    score_balance_dict = {}
+                    for key in range(1, len(score_balance) + 1):
+                        score_balance_dict[key] = score_balance[key - 1]
+                    score_instance = models.Score.objects.filter(
+                        Q(presentation_id=self.kwargs['presentation_id']) & Q(
+                            score_giver__user_id=self.request.user.id))
+                    # Checking the presence of scores with the desired specifications (for editing)
+                    # Score editing mode
+                    if score_instance.exists():
+                        args = {
+                            'presentation': presentation[0],
+                            'questions': questions,
+                            'score_balances': score_balance_dict,
+                            'score_list': score_instance[0].score_list,
+                        }
+                        return render(self.request, 'score/register_score.html', args)
+                    # Score Register mode
+                    else:
+                        args = {
+                            'presentation': presentation[0],
+                            'questions': questions,
+                            'score_balances': score_balance_dict,
+                        }
+                        return render(self.request, 'score/register_score.html', args)
                 else:
                     args = {
-                        'presentation': presentation[0],
-                        'questions': questions,
+                        'message': 'ارائه یافت نشد.',
+                        'url': reverse('score:presentations', kwargs={'group_id': self.kwargs['group_id']}),
                     }
-                    return render(self.request, 'score/register_score.html', args)
+                    return render(self.request, 'score/message_redirect.html', args)
             else:
                 args = {
-                    'message': 'ارائه یافت نشد.',
-                    'url': reverse('score:presentations', kwargs={'lesson_id': self.kwargs['lesson_id']}),
+                    'message': 'شما در زمان این ارائه غایب بودید و مجاز به امتیاز دهی نمی باشید.',
+                    'url': reverse('score:presentations', kwargs={'group_id': self.kwargs['group_id']}),
                 }
                 return render(self.request, 'score/message_redirect.html', args)
         else:

@@ -181,6 +181,7 @@ class Presentation(models.Model):
     presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
     score = models.FloatField(default=0, editable=False, blank=True, null=True)
+    absent = models.ManyToManyField(User, blank=True, verbose_name='غایبین', related_name='Presentation_absent')
     # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='presentation_creator')
