@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MinValueValidator
 from django.db.models import Q
 import math
 
@@ -27,7 +26,7 @@ def get_lesson_initial_score_list(lesson_ins):
         # return initial_score_list
         return [initial_score for i in range(question_count)]  # The final score list
     else:
-        return []
+        return None
 
 
 # Creation or editing of Preferential instance, for users of certain courses, or courses of desired users
@@ -116,8 +115,7 @@ class Lesson(models.Model):
     questions = models.ForeignKey(Question, on_delete=models.SET_NULL, blank=True, null=True,
                                   verbose_name='سوالات ارزیابی ارائه', related_name='lesson_questions')
     # The maximum score that can be used by the user for each question of each lesson
-    initial_score = ArrayField(models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)]),
-                               editable=False, blank=True, null=True)
+    initial_score = ArrayField(models.PositiveIntegerField(default=0), editable=False, blank=True, null=True)
 
     def __str__(self):
         return f"درس {self.group}"
@@ -151,8 +149,7 @@ class Preferential(models.Model):
     # which lesson?
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='preferential_lesson')
     # what grades?
-    score_balance = ArrayField(models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)]),
-                               blank=True, null=True)
+    score_balance = ArrayField(models.IntegerField(default=0), blank=True, null=True)
 
     def __str__(self):
         return f"کاربر {self.user} - {self.lesson}"
@@ -161,15 +158,14 @@ class Preferential(models.Model):
         self.full_clean()
         # This is a customized copy of the set_preferential function
         # set score_balance of Preferential
-        initial_score_list = self.lesson.initial_score
+        # score_balance is a copy of self.lesson.initial_score
+        score_balance = [i for i in self.lesson.initial_score]
         scores = Score.objects.filter(Q(score_giver__user_id=self.user.id) & Q(presentation__lesson_id=self.lesson.id))
         for score in scores:
             # List of final scores minus scores spent
-            i = 0
-            for j in score.score_list:
-                initial_score_list[i] -= j
-                i += 1
-        self.score_balance = initial_score_list
+            for i in range(len(score.score_list)):
+                score_balance[i] -= score.score_list[i]
+        self.score_balance = score_balance
         super(Preferential, self).save(*args, **kwargs)
 
 
@@ -184,7 +180,7 @@ class Presentation(models.Model):
                                help_text='موضوع ارائه در هر درس باید یکتا باشد')
     presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
-    score_avr = models.FloatField(default=0, editable=False, blank=True, null=True)
+    score = models.FloatField(default=0, editable=False, blank=True, null=True)
     # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='presentation_creator')
@@ -224,7 +220,7 @@ class Score(models.Model):
                                      related_name='score_presentation')
     score_giver = models.ForeignKey(Preferential, on_delete=models.SET_NULL, null=True, verbose_name='امتیاز دهنده',
                                     related_name='score_score_giver')
-    score_list = ArrayField(models.PositiveSmallIntegerField(), verbose_name='نمره سوالات')
+    score_list = ArrayField(models.PositiveIntegerField(), verbose_name='نمره سوالات')
 
     def __str__(self):
         return f'امتیاز ({self.score_giver}) به {self.presentation}'
@@ -247,11 +243,18 @@ class Score(models.Model):
             # Remaining scores in this lesson
             score_balance = self.score_giver.score_balance
             wrong_scores_list_index = []
+            if self.id:
+                saved_score_list = Score.objects.get(id=self.id).score_list
             for i in range(len(score_balance)):
-                if score_balance[i] < self.score_list[i]:
-                    wrong_scores_list_index.append(i + 1)
-            errors[
-                'score_list'] = f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست'
+                if self.id:
+                    if score_balance[i] + saved_score_list[i] < self.score_list[i]:
+                        wrong_scores_list_index.append(i + 1)
+                else:
+                    if score_balance[i] < self.score_list[i]:
+                        wrong_scores_list_index.append(i + 1)
+            if wrong_scores_list_index:
+                errors[
+                    'score_list'] = f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست'
         raise ValidationError(errors)
 
     def save(self, *args, **kwargs):

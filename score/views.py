@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.db.models import Q
@@ -17,7 +17,7 @@ def score_chart(request):
 # Show the list of courses
 @login_required
 def lessons_list(request):
-    lessons = Group.objects.all()
+    lessons = models.Lesson.objects.all()
     if lessons.exists():
         args = {'lessons': lessons}
         return render(request, 'score/lessons_list.html', args)
@@ -37,7 +37,7 @@ def presentations_list(request, group_id):
         presentations = models.Presentation.objects.filter(Q(lesson__group_id=group_id) & Q(is_active=True))
         # Checking the existence and activeness of the presentation
         if presentations.exists():
-            lesson = Group.objects.get(id=lesson_id)
+            lesson = models.Lesson.objects.get(group_id=group_id)
             args = {'lesson': lesson, 'presentations': presentations}
             return render(request, 'score/presentations_list.html', args)
         else:
