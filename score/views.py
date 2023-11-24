@@ -167,8 +167,29 @@ class RegisterScore(View):
         return render(self.request, 'score/register_score.html', args)
 
 
-def save_lessons(request):
+def save_lessons_and_preferentials(request):
     lessons = models.Lesson.objects.all()
     for lesson in lessons:
         lesson.save()
-    return HttpResponse('Lessons saved.')
+        lesson_users = User.objects.filter(groups__id=lesson.group.id)
+        if lesson_users:
+            lesson_preferentials = lesson.preferential_lesson.all()
+            for lesson_user in lesson_users:
+                preferential = lesson_preferentials.filter(user_id=lesson_user.id)
+                if preferential:
+                    preferential = preferential[0]
+                else:
+                    # Creating a Preferential instance with the highest score of this course for user
+                    # who do not have a Preferential instance of this lesson
+                    preferential = models.Preferential(user=lesson_user, lesson=lesson,
+                                                       score_balance=lesson.initial_score)
+                preferential.save()
+        presentations = models.Presentation.objects.filter(lesson_id=lesson.id)
+        for presentation in presentations:
+            scores = presentation.score_presentation.all()
+            presentation.score = 0
+            for score in scores:
+                for i in score.score_list:
+                    presentation.score += i
+            presentation.save()
+    return HttpResponse('Everything was saved.')
