@@ -5,9 +5,9 @@ from score import models, forms
 
 @admin.register(models.Question)
 class QuestionAdmin(admin.ModelAdmin):
-    search_fields = ['title', 'question_list', 'creator', 'latest_modifier', 'date_created', 'date_modified']
-    list_per_page = 20
-    list_display = ['title', 'creator', 'latest_modifier', 'date_created', 'date_modified']
+    search_fields = [i.name for i in models.Question._meta.fields if i.name != 'id']
+    list_per_page = 10
+    list_display = [i.name for i in models.Question._meta.fields if i.name not in ['id', 'question_list']]
     ordering = ['-id']
 
     def save_model(self, request, obj, form, change):
@@ -20,6 +20,10 @@ class QuestionAdmin(admin.ModelAdmin):
 
 @admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
+    search_fields = [i.name for i in models.Lesson._meta.fields if i.name != 'id']
+    list_per_page = 10
+    list_display = [i.name for i in models.Lesson._meta.fields if i.name != 'id']
+    ordering = ['-id']
     form = forms.ScoreLesson
 
     def has_add_permission(self, request, obj=None):
@@ -29,10 +33,9 @@ class LessonAdmin(admin.ModelAdmin):
 @admin.register(models.Presentation)
 class PresentationAdmin(admin.ModelAdmin):
     list_filter = ['lesson', 'is_active']
-    search_fields = ['lesson', 'subject', 'presenter', 'questions', 'is_active', 'creator', 'latest_modifier',
-                     'date_created', 'date_modified']
-    list_per_page = 20
-    list_display = ['lesson', 'subject', 'is_active', 'creator', 'latest_modifier', 'date_created', 'date_modified']
+    search_fields = [i.name for i in models.Presentation._meta.fields if i.name != 'id']
+    list_per_page = 10
+    list_display = [i.name for i in models.Presentation._meta.fields if i.name not in ['id', 'presenter', 'absent']]
     ordering = ['-is_active', '-id']
     list_display_links = ['lesson', 'subject']
     filter_horizontal = ['presenter', 'absent']
