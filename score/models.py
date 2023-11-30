@@ -29,35 +29,6 @@ def get_lesson_initial_score_list(lesson_ins):
         return None
 
 
-# Creation or editing of Preferential instance, for users of certain courses, or courses of desired users
-def set_preferential(lesson_ins, initial_score_list):
-    """
-    lesson_ins: Lesson (object)
-    """
-    lesson_users = User.objects.filter(groups__id=lesson_ins.group.id)
-    if lesson_users:
-        lesson_preferentials = lesson_ins.preferential_lesson.all()
-        for lesson_user in lesson_users:
-            preferential = lesson_preferentials.filter(user_id=lesson_user.id)
-            if preferential:
-                preferential = preferential[0]
-                scores = Score.objects.filter(
-                    Q(score_giver__user_id=lesson_user.id) & Q(presentation__lesson_id=lesson_ins.id))
-                for score in scores:
-                    # List of final scores minus scores spent
-                    i = 0
-                    for j in score.score_list:
-                        initial_score_list[i] -= j
-                        i += 1
-                preferential.score_balance = initial_score_list
-            else:
-                # Creating a Preferential instance with the highest score of this course for user
-                # who do not have a Preferential instance of this lesson
-                preferential = Preferential(user=lesson_user, lesson=lesson_ins,
-                                            score_balance=initial_score_list)
-            preferential.save()
-
-
 class Question(models.Model):
     class Meta:
         verbose_name = 'سوال'
@@ -92,18 +63,6 @@ class Question(models.Model):
             errors['min_score'] = 'حداقل امتیاز نمی تواند منفی باشد'
         raise ValidationError(errors)
 
-    '''
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        # the effect of changing the score range and Number of questions of the questions on the ceiling of each user's score
-        # if on update mode
-        if self.id:
-            lessons = self.lesson_questions.all()
-            for lesson in lessons:
-                lesson.save()
-        super(Question, self).save(*args, **kwargs)
-        '''
-
 
 # Lesson model according to Group model
 class Lesson(models.Model):
@@ -135,7 +94,6 @@ class Lesson(models.Model):
         if self.id:
             initial_score_list = get_lesson_initial_score_list(self)
             self.initial_score = initial_score_list
-            # set_preferential(self, initial_score_list)
         super(Lesson, self).save(*args, **kwargs)
 
 
@@ -207,12 +165,6 @@ class Presentation(models.Model):
                     break
         raise ValidationError(errors)
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        # The effect of changing the number of presentations on the score ceiling of each question from the presentation
-        # self.lesson.save()
-        super(Presentation, self).save(*args, **kwargs)
-
 
 class Score(models.Model):
     class Meta:
@@ -259,15 +211,3 @@ class Score(models.Model):
                 errors[
                     'score_list'] = f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست'
         raise ValidationError(errors)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        # Record the change of the user's score_balance in that course
-        # set_preferential(self.presentation.lesson, self.presentation.lesson.initial_score)
-        '''
-        presentation_score = self.presentation.score
-        for i in self.score_list:
-            presentation_score += i
-        self.presentation.save()
-        '''
-        super(Score, self).save(*args, **kwargs)

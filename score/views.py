@@ -1,5 +1,3 @@
-import math
-
 from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -7,13 +5,9 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.urls import reverse
+import math
 
 from score import models, forms
-
-
-# TODO نمودار ارائه همه دروس
-def score_chart(request):
-    pass
 
 
 # Show the list of courses
