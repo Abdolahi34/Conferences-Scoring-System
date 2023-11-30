@@ -1,3 +1,5 @@
+import math
+
 from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -187,9 +189,16 @@ def save_lessons_and_preferentials(request):
         presentations = models.Presentation.objects.filter(lesson_id=lesson.id)
         for presentation in presentations:
             scores = presentation.score_presentation.all()
-            presentation.score = 0
-            for score in scores:
-                for i in score.score_list:
-                    presentation.score += i
+            if scores:
+                score_sum = 0
+                for score in scores:
+                    for i in score.score_list:
+                        score_sum += i
+                # The sum of the points given / the maximum number of points that could be given based on the people who gave points
+                # Finally, it was multiplied by 3 so that the obtained points are calculated based on 3 grades
+                num = (score_sum / (len(scores) * len(lesson.questions.question_list) * lesson.questions.max_score)) * 3
+                presentation.score_avr = math.ceil(num * 100) / 100
+            else:
+                presentation.score_avr = 0
             presentation.save()
     return HttpResponse('Everything was saved.')
