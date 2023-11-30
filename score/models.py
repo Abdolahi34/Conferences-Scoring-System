@@ -67,9 +67,9 @@ class Question(models.Model):
                              help_text='عنوان نمایشی به جای لیست سوالات')
     question_list = ArrayField(models.CharField(max_length=200), verbose_name='سوالات ارزیابی ارائه',
                                help_text='بین سوالات از , (کاما) استفاده کنید.')  # TODO change help_text after create adminPanel
-    min_score = models.IntegerField(default=0, verbose_name='حداقل امتیاز قابل ثبت برای سوالات',
+    min_score = models.IntegerField(default=0, verbose_name='حداقل امتیاز',
                                     help_text='حداقل امتیازی که میتوانید وارد کنید 0 است')
-    max_score = models.IntegerField(default=10, verbose_name='حداکثر امتیاز قابل ثبت برای سوالات')
+    max_score = models.IntegerField(default=10, verbose_name='حداکثر امتیاز')
     # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='question_creator')
@@ -111,11 +111,13 @@ class Lesson(models.Model):
         verbose_name = 'درس'
         verbose_name_plural = 'درس ها'
 
-    group = models.OneToOneField(Group, on_delete=models.CASCADE, editable=False, related_name='lesson_group')
+    group = models.OneToOneField(Group, on_delete=models.CASCADE, editable=False, verbose_name='گروه',
+                                 related_name='lesson_group')
     questions = models.ForeignKey(Question, on_delete=models.SET_NULL, blank=True, null=True,
                                   verbose_name='سوالات ارزیابی ارائه', related_name='lesson_questions')
     # The maximum score that can be used by the user for each question of each lesson
-    initial_score = ArrayField(models.PositiveIntegerField(default=0), editable=False, blank=True, null=True)
+    initial_score = ArrayField(models.PositiveIntegerField(default=0), editable=False, blank=True, null=True,
+                               verbose_name='امتیاز اولیه هر کاربر')
 
     def __str__(self):
         return f"درس {self.group}"
@@ -178,9 +180,9 @@ class Presentation(models.Model):
                                related_name='presentation_lesson')
     subject = models.CharField(max_length=100, verbose_name='موضوع ارائه',
                                help_text='موضوع ارائه در هر درس باید یکتا باشد')
-    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
-    score = models.FloatField(default=0, editable=False, blank=True, null=True)
+    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
+    score_avr = models.FloatField(default=0, editable=False, blank=True, null=True, verbose_name='امتیاز ارائه')
     absent = models.ManyToManyField(User, blank=True, verbose_name='غایبین', related_name='Presentation_absent')
     # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
