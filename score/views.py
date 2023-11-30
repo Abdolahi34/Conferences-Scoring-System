@@ -163,6 +163,7 @@ class RegisterScore(View):
         return render(self.request, 'score/register_score.html', args)
 
 
+# Run every minute
 def save_lessons_and_preferentials(request):
     lessons = models.Lesson.objects.all()
     for lesson in lessons:
