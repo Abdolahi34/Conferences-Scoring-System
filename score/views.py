@@ -190,7 +190,11 @@ def save_lessons_and_preferentials(request):
                         score_sum += i
                 # The sum of the points given / the maximum number of points that could be given based on the people who gave points
                 # Finally, it was multiplied by 3 so that the obtained points are calculated based on 3 grades
-                num = (score_sum / (len(scores) * len(lesson.questions.question_list) * lesson.questions.max_score)) * 3
+                people_who_can_rate = len(lesson_users) - len(presentation.absent.all())
+                initial_score_of_user_per_question = math.ceil(2 / 3 * lesson.questions.max_score)
+                max_scores_allocable = people_who_can_rate * len(
+                    lesson.questions.question_list) * initial_score_of_user_per_question
+                num = (score_sum / max_scores_allocable) * 3
                 presentation.score_avr = math.ceil(num * 100) / 100
             else:
                 presentation.score_avr = 0
