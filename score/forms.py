@@ -19,6 +19,12 @@ class ScoreLesson(forms.ModelForm):
 
 
 class ScorePresentation(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        lesson_users = User.objects.filter(groups__id=kwargs['instance'].lesson.group.id)
+        self.fields['presenter'].queryset = lesson_users
+        self.fields['absent'].queryset = lesson_users
+
     def clean(self):
         """
         This is the function that can be used to
