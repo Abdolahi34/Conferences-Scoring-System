@@ -140,8 +140,8 @@ class Presentation(models.Model):
                                help_text='موضوع ارائه در هر درس باید یکتا باشد')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
     presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
-    score_avr = models.FloatField(default=0, editable=False, blank=True, null=True, verbose_name='امتیاز ارائه')
     absent = models.ManyToManyField(User, blank=True, verbose_name='غایبین', related_name='Presentation_absent')
+    score_avr = models.FloatField(default=0, editable=False, blank=True, null=True, verbose_name='امتیاز ارائه')
     # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
                                 verbose_name='سازنده', related_name='presentation_creator')

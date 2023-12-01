@@ -21,9 +21,11 @@ class ScoreLesson(forms.ModelForm):
 class ScorePresentation(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        lesson_users = User.objects.filter(groups__id=kwargs['instance'].lesson.group.id)
-        self.fields['presenter'].queryset = lesson_users
-        self.fields['absent'].queryset = lesson_users
+        if 'instance' in kwargs.keys():
+            if kwargs['instance']:
+                lesson_users = User.objects.filter(groups__id=kwargs['instance'].lesson.group.id)
+                self.fields['presenter'].queryset = lesson_users
+                self.fields['absent'].queryset = lesson_users
 
     def clean(self):
         """
@@ -32,19 +34,22 @@ class ScorePresentation(forms.ModelForm):
         """
         super(ScorePresentation, self).clean()
         # Examining student membership in the course
-        new_presenters = self.cleaned_data['presenter']
-        # self.cleaned_data['lesson'] = lesson instance
-        lesson_users = User.objects.filter(groups__id=self.cleaned_data['lesson'].group.id)
-        users_not_in_lesson = [i for i in new_presenters if i not in lesson_users]
-        errors = {}
-        if users_not_in_lesson:
-            name_of_users_not_in_lesson = []
-            for i in users_not_in_lesson:
-                name_of_users_not_in_lesson.append(i.username)
-                errors[
-                    'presenter'] = f'افراد زیر در لیست دانشجویان این درس نیستند. نام کاربری ها: {name_of_users_not_in_lesson}'
-        if errors:
-            raise ValidationError(errors)
+        if 'presenter' in self.cleaned_data.keys():
+            new_presenters = self.cleaned_data['presenter']
+            # self.cleaned_data['lesson'] = lesson instance
+            lesson_users = User.objects.filter(groups__id=self.cleaned_data['lesson'].group.id)
+            users_not_in_lesson = [i for i in new_presenters if i not in lesson_users]
+            errors = {}
+            if users_not_in_lesson:
+                name_of_users_not_in_lesson = []
+                for i in users_not_in_lesson:
+                    name_of_users_not_in_lesson.append(i.username)
+                    errors[
+                        'presenter'] = f'افراد زیر در لیست دانشجویان این درس نیستند. نام کاربری ها: {name_of_users_not_in_lesson}'
+            if errors:
+                raise ValidationError(errors)
+        else:
+            raise ValidationError({'presenter': 'ارائه کننده انتخاب نشده است.'})
 
 
 class ScoreScoreAdd(forms.ModelForm):
