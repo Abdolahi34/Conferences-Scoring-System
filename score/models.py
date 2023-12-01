@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
+from django_jsonform.models.fields import ArrayField as ArrayField_djf
 from django.db.models import Q
 import math
 
@@ -36,8 +37,7 @@ class Question(models.Model):
 
     title = models.CharField(max_length=100, unique=True, verbose_name='عنوان',
                              help_text='عنوان نمایشی به جای لیست سوالات')
-    question_list = ArrayField(models.CharField(max_length=200), verbose_name='سوالات ارزیابی ارائه',
-                               help_text='بین سوالات از , (کاما) استفاده کنید.')  # TODO change help_text after create adminPanel
+    question_list = ArrayField_djf(models.CharField(max_length=200), verbose_name='سوالات ارزیابی ارائه')
     min_score = models.IntegerField(default=0, verbose_name='حداقل امتیاز',
                                     help_text='حداقل امتیازی که میتوانید وارد کنید 0 است')
     max_score = models.IntegerField(default=10, verbose_name='حداکثر امتیاز')
