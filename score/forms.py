@@ -36,23 +36,28 @@ class ScorePresentation(forms.ModelForm):
         validate model data from admin
         """
         super(ScorePresentation, self).clean()
-        # Examining student membership in the course
-        if 'presenter' in self.cleaned_data.keys():
-            new_presenters = self.cleaned_data['presenter']
-            # self.cleaned_data['lesson'] = lesson instance
-            lesson_users = User.objects.filter(groups__id=self.cleaned_data['lesson'].group.id)
-            users_not_in_lesson = [i for i in new_presenters if i not in lesson_users]
-            errors = {}
-            if users_not_in_lesson:
-                name_of_users_not_in_lesson = []
-                for i in users_not_in_lesson:
-                    name_of_users_not_in_lesson.append(i.username)
+
+        # A function to check the membership of people in a particular course
+        def membership_check(members, is_required=False):
+            if members in self.cleaned_data.keys():
+                new_members = self.cleaned_data[members]
+                users_not_in_lesson = [i for i in new_members if i not in lesson_users]
+                if users_not_in_lesson:
+                    name_of_users_not_in_lesson = [i.username for i in users_not_in_lesson]
                     errors[
-                        'presenter'] = f'افراد زیر در لیست دانشجویان این درس نیستند. نام کاربری ها: {name_of_users_not_in_lesson}'
+                        members] = f'افراد زیر در لیست دانشجویان این درس نیستند. نام کاربری ها: {name_of_users_not_in_lesson}'
+            else:
+                if is_required:
+                    errors[members] = 'فردی انتخاب نشده است.'
+
+        # Examining the membership of presenters and absentees in the course
+        if 'lesson' in self.cleaned_data.keys():
+            errors = {}
+            lesson_users = User.objects.filter(groups__id=self.cleaned_data['lesson'].group.id)
+            membership_check('presenter', True)
+            membership_check('absent')
             if errors:
                 raise ValidationError(errors)
-        else:
-            raise ValidationError({'presenter': 'ارائه کننده انتخاب نشده است.'})
 
 
 class ScoreScoreAdd(forms.ModelForm):
