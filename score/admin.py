@@ -26,6 +26,8 @@ class LessonAdmin(admin.ModelAdmin):
     ordering = ['-id']
     form = forms.ScoreLesson
 
+    # Removal of the possibility of directly adding a lesson
+    # after adding a group, the lesson will be added automatically
     def has_add_permission(self, request, obj=None):
         return False
 

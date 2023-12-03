@@ -21,7 +21,10 @@ class ScoreLesson(forms.ModelForm):
 class ScorePresentation(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        # Placing the students of each course in the list of selectable people
+        # In edit mode
         if 'instance' in kwargs.keys():
+            # if instance not None
             if kwargs['instance']:
                 lesson_users = User.objects.filter(groups__id=kwargs['instance'].lesson.group.id)
                 self.fields['presenter'].queryset = lesson_users
@@ -30,7 +33,7 @@ class ScorePresentation(forms.ModelForm):
     def clean(self):
         """
         This is the function that can be used to
-        validate your model data from admin
+        validate model data from admin
         """
         super(ScorePresentation, self).clean()
         # Examining student membership in the course

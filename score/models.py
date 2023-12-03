@@ -32,8 +32,8 @@ def get_lesson_initial_score_list(lesson_ins):
 
 class Question(models.Model):
     class Meta:
-        verbose_name = 'سوال'
-        verbose_name_plural = 'سوالات'
+        verbose_name = 'مجموعه سوال'
+        verbose_name_plural = 'مجموعه سوالات'
 
     title = models.CharField(max_length=100, unique=True, verbose_name='عنوان',
                              help_text='عنوان نمایشی به جای لیست سوالات')
@@ -68,7 +68,7 @@ class Question(models.Model):
 class Lesson(models.Model):
     class Meta:
         verbose_name = 'درس'
-        verbose_name_plural = 'درس ها'
+        verbose_name_plural = 'دروس'
 
     group = models.OneToOneField(Group, on_delete=models.CASCADE, editable=False, verbose_name='گروه',
                                  related_name='lesson_group')
@@ -84,10 +84,13 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         """
-        When the save() function of the Lesson model is executed when the Presentation model is saved.
-        When an instance of the Presentation model is created, it is not yet stored in the database,
-        until it is counted in the number of presentations when calculating the lesson initial_score.
-        So by adding an arg to the save function, we manage to add one to the number of presentations at this time.
+        Different modes of initial_score:
+        1. The set of questions for the lesson is not defined.
+        Output: None
+        2. There is no presentation for the lesson.
+        Output: [0, 0 ... 0] (puts 0 in the list to the number of questions.)
+        3. At least one presentation and set of questions should be defined for the lesson.
+        Output: list of initial user scores.
         """
         # set initial_score of Lesson
         # if on update mode
