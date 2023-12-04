@@ -178,30 +178,30 @@ class Score(models.Model):
         errors = {}
         # Instead of validating the scoring of all questions, all score fields were required in the html file.
         # Validation of the given score range
+        min_score = self.presentation.lesson.questions.min_score
+        max_score = self.presentation.lesson.questions.max_score
         for i in self.score_list:
-            if not self.presentation.lesson.questions.min_score <= i <= self.presentation.lesson.questions.max_score:
-                errors[
-                    'score_list'] = f'امتیازات وارد شده باید بین بازه {self.presentation.lesson.questions.min_score} تا {self.presentation.lesson.questions.max_score} باشد'
+            if not min_score <= i <= max_score:
+                errors['score_list'] = [f'امتیازات وارد شده باید بین بازه {min_score} تا {max_score} باشد']
                 break
-        # Examining student membership in the course
-        lesson_users = User.objects.filter(groups__id=self.presentation.lesson.group.id)
-        if self.score_giver.user not in lesson_users:
-            errors['score_giver'] = f'یوزر {self.score_giver.user.username} عضو درس موردنظر نمی باشد'
+        # Checking student membership in the course is done in views.py.
         # Validate that the scores entered are less than or equal to the scores balance
-        if not errors:
-            # Remaining scores in this lesson
-            score_balance = self.score_giver.score_balance
-            wrong_scores_list_index = []
+        score_balance = self.score_giver.score_balance  # Remaining scores in this lesson
+        wrong_scores_list_index = []
+        if self.id:
+            saved_score_list = Score.objects.get(id=self.id).score_list
+        for i in range(len(score_balance)):
             if self.id:
-                saved_score_list = Score.objects.get(id=self.id).score_list
-            for i in range(len(score_balance)):
-                if self.id:
-                    if score_balance[i] + saved_score_list[i] < self.score_list[i]:
-                        wrong_scores_list_index.append(i + 1)
-                else:
-                    if score_balance[i] < self.score_list[i]:
-                        wrong_scores_list_index.append(i + 1)
-            if wrong_scores_list_index:
+                if score_balance[i] + saved_score_list[i] < self.score_list[i]:
+                    wrong_scores_list_index.append(i + 1)
+            else:
+                if score_balance[i] < self.score_list[i]:
+                    wrong_scores_list_index.append(i + 1)
+        if wrong_scores_list_index:
+            if 'score_list' in errors.keys():
+                errors['score_list'].append(
+                    f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست')
+            else:
                 errors[
                     'score_list'] = f'امتیاز های وارد شده روی سوالات شماره {wrong_scores_list_index} بیشتر از موجودی شماست'
         raise ValidationError(errors)
