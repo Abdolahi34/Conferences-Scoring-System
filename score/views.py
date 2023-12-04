@@ -182,6 +182,7 @@ def save_lessons_and_preferentials(request):
                     for i in score.score_list:
                         score_sum += i
                 # The sum of the points given / The number of scorers
+                # Using the math module to round the score to 2 decimal places
                 presentation.score_avr = math.ceil((score_sum / scores.count()) * 100) / 100
             else:
                 presentation.score_avr = 0
