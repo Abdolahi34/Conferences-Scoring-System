@@ -7,29 +7,6 @@ from django.db.models import Q
 import math
 
 
-# Lesson initial_score recalculation
-def get_lesson_initial_score_list(lesson_ins):
-    """
-    lesson_ins: Lesson (object)
-    """
-    presentations_count = lesson_ins.presentation_lesson.all().count()
-    if lesson_ins.questions:
-        max_score = lesson_ins.questions.max_score
-        min_score = lesson_ins.questions.min_score
-        score_amount = max_score - min_score
-        # if presentations_count != 0
-        if presentations_count:
-            # usable initial score = rounding(2/3 * Number of presentations * maximum score - minimum score of each lesson question)
-            initial_score = math.ceil(0.666 * presentations_count * score_amount)
-        else:
-            initial_score = 0
-        question_count = len(lesson_ins.questions.question_list)
-        # return initial_score_list
-        return [initial_score for i in range(question_count)]  # The final score list
-    else:
-        return None
-
-
 class Question(models.Model):
     class Meta:
         verbose_name = 'مجموعه سوال'
@@ -92,11 +69,22 @@ class Lesson(models.Model):
         3. At least one presentation and set of questions should be defined for the lesson.
         Output: list of initial user scores.
         """
-        # set initial_score of Lesson
-        # if on update mode
-        if self.id:
-            initial_score_list = get_lesson_initial_score_list(self)
-            self.initial_score = initial_score_list
+        # Lesson initial_score calculation on edit mode
+        if self.id and self.questions:
+            presentations_count = self.presentation_lesson.all().count()
+            # if presentations_count != 0
+            if presentations_count:
+                max_score = self.questions.max_score
+                min_score = self.questions.min_score
+                score_amount = max_score - min_score
+                # usable initial score = rounding(2/3 * Number of presentations * maximum score - minimum score of each question of the lesson)
+                initial_score = math.ceil(0.666 * presentations_count * score_amount)
+            else:
+                initial_score = 0
+            question_count = len(self.questions.question_list)
+            self.initial_score = [initial_score for _ in range(question_count)]  # The final list of scores
+        else:
+            self.initial_score = None
         super(Lesson, self).save(*args, **kwargs)
 
 
