@@ -14,7 +14,7 @@ from score import models, forms
 @login_required
 def lessons_list(request):
     lessons = models.Lesson.objects.all()
-    if lessons.exists():
+    if lessons:
         args = {'lessons': lessons}
         return render(request, 'score/lessons_list.html', args)
     else:
@@ -130,7 +130,7 @@ class RegisterScore(View):
             "score_list": score_list,
         }
         # If there is a score instance, it edits it. Otherwise, it creates a new instance
-        if score_instance.exists():
+        if score_instance:
             form = forms.ScoreScoreAdd(posted_data_reformatted, instance=score_instance[0])
         else:
             form = forms.ScoreScoreAdd(posted_data_reformatted)

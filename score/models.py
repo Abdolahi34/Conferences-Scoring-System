@@ -31,7 +31,7 @@ class Question(models.Model):
 
     def clean(self):
         errors = {}
-        if len(self.question_list) < 1:
+        if not self.question_list:
             errors['question_list'] = 'حداقل یک سوال باید تعریف کنید'
         if not self.min_score < self.max_score:
             errors['min_score'] = 'حداقل امتیاز باید از حداکثر کمتر باشد'
@@ -107,16 +107,17 @@ class Preferential(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        # This is a customized copy of the set_preferential function
         # set score_balance of Preferential
-        # score_balance is a copy of self.lesson.initial_score
-        score_balance = [i for i in self.lesson.initial_score]
-        scores = Score.objects.filter(Q(score_giver__user_id=self.user.id) & Q(presentation__lesson_id=self.lesson.id))
-        for score in scores:
-            # List of final scores minus scores spent
-            for i in range(len(score.score_list)):
-                score_balance[i] -= score.score_list[i]
-        self.score_balance = score_balance
+        # score_balance = copy of self.lesson.initial_score
+        if self.lesson.initial_score:
+            score_balance = [i for i in self.lesson.initial_score]
+            scores = Score.objects.filter(
+                Q(score_giver__user_id=self.user.id) & Q(presentation__lesson_id=self.lesson.id))
+            for score in scores:
+                # List of final scores minus scores spent
+                for i in range(len(score.score_list)):
+                    score_balance[i] -= score.score_list[i]
+            self.score_balance = score_balance
         super(Preferential, self).save(*args, **kwargs)
 
 
@@ -125,13 +126,15 @@ class Presentation(models.Model):
         verbose_name = 'ارائه'
         verbose_name_plural = 'ارائه ها'
 
-    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, verbose_name='نام گروه (درس)',
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, verbose_name='نام گروه (درس)',
                                related_name='presentation_lesson')
     subject = models.CharField(max_length=100, verbose_name='موضوع ارائه',
                                help_text='موضوع ارائه در هر درس باید یکتا باشد')
     is_active = models.BooleanField(default=False, verbose_name='وضعیت ارائه')
-    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter')
-    absent = models.ManyToManyField(User, blank=True, verbose_name='غایبین', related_name='Presentation_absent')
+    presenter = models.ManyToManyField(User, verbose_name='ارائه کنندگان', related_name='Presentation_presenter',
+                                       help_text='درصورت تغییر درس، یکبار ارائه را ذخیره کنید، تا دانشجویان درسی که انتخاب کردید نمایش داده شوند.<br>')
+    absent = models.ManyToManyField(User, blank=True, verbose_name='غایبین', related_name='Presentation_absent',
+                                    help_text='درصورت تغییر درس، یکبار ارائه را ذخیره کنید، تا دانشجویان درسی که انتخاب کردید نمایش داده شوند.<br>')
     score_avr = models.FloatField(default=0, editable=False, blank=True, null=True, verbose_name='امتیاز ارائه')
     # Confidential information fields
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, editable=False,
@@ -147,14 +150,14 @@ class Presentation(models.Model):
     def clean(self):
         # Validation of student membership in the course is done in the forms.py file
         # Validation of the uniqueness of the subject in each lesson
-        errors = {}
-        presentations = Presentation.objects.filter(lesson_id=self.lesson.id)
-        for i in presentations:
-            if i.subject == self.subject:
-                if i.id != self.id:
+        if self.lesson:
+            errors = {}
+            presentations = Presentation.objects.filter(lesson_id=self.lesson.id)
+            for i in presentations:
+                if i.subject == self.subject and i.id != self.id:
                     errors['subject'] = 'موضوع در هردرس باید یکتا باشد'
                     break
-        raise ValidationError(errors)
+            raise ValidationError(errors)
 
 
 class Score(models.Model):
@@ -162,9 +165,9 @@ class Score(models.Model):
         verbose_name = 'امتیاز'
         verbose_name_plural = 'امتیازات'
 
-    presentation = models.ForeignKey(Presentation, on_delete=models.SET_NULL, null=True, verbose_name='مشخصات ارائه',
+    presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE, null=True, verbose_name='مشخصات ارائه',
                                      related_name='score_presentation')
-    score_giver = models.ForeignKey(Preferential, on_delete=models.SET_NULL, null=True, verbose_name='امتیاز دهنده',
+    score_giver = models.ForeignKey(Preferential, on_delete=models.CASCADE, null=True, verbose_name='امتیاز دهنده',
                                     related_name='score_score_giver')
     score_list = ArrayField(models.PositiveIntegerField(), verbose_name='نمره سوالات')
 
