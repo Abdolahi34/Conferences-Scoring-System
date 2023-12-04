@@ -5,6 +5,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.urls import reverse
+import math
 
 from score import models, forms
 
@@ -116,7 +117,7 @@ class RegisterScore(View):
             "csrfmiddlewaretoken": posted_data['csrfmiddlewaretoken'],
             "presentation": self.kwargs['presentation_id'],
             "score_giver": models.Preferential.objects.get(Q(user_id=self.request.user.id) & Q(lesson_id=lesson.id)).id,
-            "new_score_list": new_score_list,
+            "score_list": new_score_list,
         }
         # If there is a score instance, it edits it. Otherwise, it creates a new instance
         if score_instance:
@@ -181,7 +182,7 @@ def save_lessons_and_preferentials(request):
                     for i in score.score_list:
                         score_sum += i
                 # The sum of the points given / The number of scorers
-                presentation.score_avr = score_sum / scores.count()
+                presentation.score_avr = math.ceil((score_sum / scores.count()) * 100) / 100
             else:
                 presentation.score_avr = 0
             presentation.save()
