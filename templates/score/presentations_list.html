@@ -16,17 +16,22 @@
             {#                </div>#}
             {#            </div>#}
             <div class="card-body p-0">
-                <table class="table table-striped projects">
+                <table class="table table-striped projects table-bordered">
                     <thead>
                     <tr>
-                        <th class="text-2xl" style="text-align: right; direction: rtl">
-                            موضوع ارائه
-                        </th>
+                        <th class="text-2xl" style="text-align: center; direction: rtl; font-size: 20px; max-width: 60px">امتیاز</th>
+                        <th class="text-2xl" style="text-align: right; direction: rtl">موضوع ارائه</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for presentation in presentations %}
                         <tr>
+                            <td style="text-align: center; direction: rtl">
+                                <a class="text-lg"
+                                   href="{% url 'score:register_score' group_id=lesson.group.id  presentation_id=presentation.id %}">
+                                    {{ presentation.score_avr }}
+                                </a>
+                            </td>
                             <td style="text-align: right; direction: rtl">
                                 <a class="text-lg"
                                    href="{% url 'score:register_score' group_id=lesson.group.id  presentation_id=presentation.id %}">
