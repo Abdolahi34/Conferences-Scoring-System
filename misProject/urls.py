@@ -23,7 +23,6 @@ from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='score:score_chart'), name='main_page'),
-    path('grappelli/', include('grappelli.urls')), # grappelli URLS
     path('score/', include('score.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
