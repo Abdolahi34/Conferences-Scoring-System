@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>در حال انتقال ...</title>
-    <meta http-equiv="refresh" content="4; URL={{ url }}"/>
+    <title>در حال انتقال به صفحه مورد نظر</title>
 </head>
 <body>
-<br>
-<h1 style="text-align: center; font-size: xxx-large; direction: rtl">{{ message }}</h1>
-<hr>
-<h4 style="text-align: center; font-size: 2rem; direction: rtl">تا چند ثانیه دیگر به صفحه مورد نظر منتقل خواهید
-    شد.</h4>
-<h4 style="text-align: center; font-size: 1.8rem; direction: rtl">برای رفتن به صفحه مورد نظر روی <a href="{{ url }}">این
-    لینک</a> کلیک کنید.</h4>
+<script>
+    alert("{{ message }}");
+
+    function redirect() {
+        window.location.href = "{{ url }}";
+    }
+
+    redirect();
+</script>
 </body>
 </html>
