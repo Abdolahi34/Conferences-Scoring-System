@@ -170,6 +170,9 @@ class Score(models.Model):
     score_giver = models.ForeignKey(Preferential, on_delete=models.CASCADE, null=True, verbose_name='امتیاز دهنده',
                                     related_name='score_score_giver')
     score_list = ArrayField(models.PositiveIntegerField(), verbose_name='نمره سوالات')
+    # Confidential information fields
+    date_created = models.DateTimeField(auto_now_add=True, null=True, verbose_name='تاریخ ایجاد')
+    date_modified = models.DateTimeField(auto_now=True, null=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
         return f'امتیاز ({self.score_giver}) به {self.presentation}'
