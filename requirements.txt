@@ -2,3 +2,4 @@ Django==4.2.7
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 django-jsonform==2.21.2
+django_import_export==3.3.4
