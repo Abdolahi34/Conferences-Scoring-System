@@ -145,7 +145,7 @@ class Presentation(models.Model):
     date_modified = models.DateTimeField(auto_now=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
-        return f'{self.lesson} - موضوع {self.subject}'
+        return f'موضوع {self.subject}'
 
     def clean(self):
         # Validation of student membership in the course is done in the forms.py file
