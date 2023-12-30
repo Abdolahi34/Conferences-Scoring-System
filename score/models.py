@@ -77,8 +77,8 @@ class Lesson(models.Model):
                 max_score = self.questions.max_score
                 min_score = self.questions.min_score
                 score_amount = max_score - min_score
-                # usable initial score = rounding(2/3 * Number of presentations * maximum score - minimum score of each question of the lesson)
-                initial_score = math.ceil(0.666 * presentations_count * score_amount)
+                # usable initial score = rounding(2/3 * maximum score - minimum score of each question of the lesson) * Number of presentations
+                initial_score = math.ceil(0.666 * score_amount) * presentations_count
             else:
                 initial_score = 0
             question_count = len(self.questions.question_list)
