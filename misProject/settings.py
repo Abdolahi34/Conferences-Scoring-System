@@ -41,9 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_jsonform',
     'import_export',
+    'explorer',
     'misProject',
     'score.apps.ScoreConfig',
 ]
+
+EXPLORER_CONNECTIONS = {'Default': 'default'}
+EXPLORER_DEFAULT_CONNECTION = 'default'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
