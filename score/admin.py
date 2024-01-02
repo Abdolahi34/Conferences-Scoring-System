@@ -55,8 +55,6 @@ class PresentationAdmin(ExportActionModelAdmin):
 
 @admin.register(models.Score)
 class ScoreAdmin(ExportActionModelAdmin):
-    list_per_page = 10
-
     def has_add_permission(self, request):
         return False
 
