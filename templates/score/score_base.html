@@ -35,13 +35,18 @@
 <!-- Navbar Transparent -->
 <nav class="navbar navbar-expand-lg position-absolute top-0 z-index-3 w-100 shadow-none my-3 navbar-transparent">
     <div class="container">
-        <a class="navbar-brand  text-white " href="{% url 'main_page' %}"
-           rel="tooltip" data-placement="bottom">
+        <a class="btn bg-gradient-info mb-0 me-1 mt-2 mt-md-0" href="{% url 'main_page' %}"
+           style="white-space: nowrap; max-width: 7rem; min-width: 7rem; min-height: 2rem; max-height: 2rem">
             صفحه اصلی
         </a>
+        <a class="btn bg-gradient-orange mb-0 me-1 mt-2 mt-md-0" href="{% url 'password_change' %}"
+           style="white-space: nowrap; max-width: 5rem; min-width: 5rem; margin-left: 1rem; min-height: 2rem;
+           max-height: 2rem">
+            تغییر رمز
+        </a>
         <a href="{% url 'logout' %}"
-           class="btn btn-sm  bg-gradient-danger mb-0 me-1 mt-2 mt-md-0"
-           style="min-width: 5rem; min-height: 2rem; margin-left: 50px">خروج
+           class="btn btn-sm bg-gradient-danger mb-0 me-1 mt-2 mt-md-0"
+           style="min-width: 5rem; min-height: 2rem; max-height: 2rem; margin-left: 1rem">خروج
         </a>
         <button class="navbar-toggler shadow-none ms-2" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false"
