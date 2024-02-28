@@ -77,8 +77,8 @@ class Lesson(models.Model):
                 max_score = self.questions.max_score
                 min_score = self.questions.min_score
                 score_amount = max_score - min_score
-                # usable initial score = rounding(2/3 * maximum score - minimum score of each question of the lesson) * Number of presentations
-                initial_score = math.ceil(0.666 * score_amount) * presentations_count
+                # usable initial score = rounding(2/3 * Number of presentations * maximum score - minimum score of each question of the lesson)
+                initial_score = math.ceil(0.666 * presentations_count * score_amount)
             else:
                 initial_score = 0
             question_count = len(self.questions.question_list)
@@ -145,7 +145,7 @@ class Presentation(models.Model):
     date_modified = models.DateTimeField(auto_now=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
-        return f'موضوع {self.subject}'
+        return f'{self.lesson} - موضوع {self.subject}'
 
     def clean(self):
         # Validation of student membership in the course is done in the forms.py file
@@ -170,9 +170,6 @@ class Score(models.Model):
     score_giver = models.ForeignKey(Preferential, on_delete=models.CASCADE, null=True, verbose_name='امتیاز دهنده',
                                     related_name='score_score_giver')
     score_list = ArrayField(models.PositiveIntegerField(), verbose_name='نمره سوالات')
-    # Confidential information fields
-    date_created = models.DateTimeField(auto_now_add=True, null=True, verbose_name='تاریخ ایجاد')
-    date_modified = models.DateTimeField(auto_now=True, null=True, verbose_name='تاریخ آخرین تغییر')
 
     def __str__(self):
         return f'امتیاز ({self.score_giver}) به {self.presentation}'

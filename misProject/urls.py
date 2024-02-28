@@ -26,7 +26,6 @@ urlpatterns = [
     path('score/', include('score.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('sql-explorer/', include('explorer.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
