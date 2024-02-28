@@ -33,7 +33,8 @@ def presentations_list(request, group_id):
     # Examining student membership in the course
     if User.objects.filter(Q(groups__id=group_id) & Q(id=request.user.id)):
         # Checking the existence and activeness of the presentation
-        presentations = models.Presentation.objects.filter(Q(lesson__group_id=group_id) & Q(is_active=True))
+        presentations = models.Presentation.objects.filter(Q(lesson__group_id=group_id) & Q(is_active=True)).order_by(
+            '-score_avr')
         if presentations:
             args = {'lesson': lesson, 'presentations': presentations}
             return render(request, 'score/presentations_list.html', args)
@@ -140,7 +141,7 @@ class RegisterScore(View):
         for key in range(1, len(score_balance) + 1):
             score_balance_dict[key] = score_balance[key - 1]
         args = {
-            'presentation': presentation[0],
+            'presentation': presentation,
             'questions': questions,
             'score_balances': score_balance_dict,
             'score_list': new_score_list,
