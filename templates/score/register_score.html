@@ -1,58 +1,73 @@
 {% extends 'score/score_base.html' %}
 
-{% block center_title %}ثبت امتیاز ارائه{% endblock %}
-{% block center_subtitle %}
-    <span dir="rtl">ارائه با موضوع {{ presentation.subject }}</span>{% endblock %}
+{% block page_header %}ثبت امتیاز ارائه با موضوع {{ presentation.subject }}{% endblock %}
 
-{% block main_section %}
-    <div class="col-12">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">سوالات</h3>
-            </div>
-            <!-- /.card-header -->
-            <div class="card-body">
-                <div class="row margin">
-                    <div dir="rtl" class="callout callout-info">
-                        <h5>امتیاز باقی مانده شما</h5>
+{% block breadcrumb %}
 
-                        {% for key, value in score_balances.items %}
-                            <p>امتیاز شما در سوال {{ key }} : <b style="font-size: large">{{ value }}</b></p>
-                        {% endfor %}
-                    </div>
-                    <div class="col-sm-6" dir="rtl">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div style="color: #dc3545">
-                                {% if form.non_field_errors %}
-                                    {{ form.non_field_errors }}
-                                    <br>
-                                {% endif %}
-                                {% if form.errors %}
-                                    {{ form.errors }}
-                                    <br>
-                                {% endif %}
-                            </div>
-                            <div id="card-body" class="card-body">
+{% endblock %}
 
-                            </div>
-                            <!-- /.card-body -->
-                            <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">ارسال</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <!-- /.card-body -->
+{% block card_title %}سوالات{% endblock %}
+
+{% block card_body %}
+    <div class="row margin" dir="rtl">
+        <div dir="rtl" class="callout callout-info">
+            <h5>امتیاز باقی مانده شما</h5>
+
+            {% for key, value in score_balances.items %}
+                <p>امتیاز شما در سوال {{ key }} : <b style="font-size: large">{{ value }}</b></p>
+            {% endfor %}
         </div>
-        <!-- /.card -->
+        <div>
+            <form method="post" id="form1">
+                {% csrf_token %}
+                <div style="color: #dc3545">
+                    {% if form.non_field_errors %}
+                        {{ form.non_field_errors }}
+                        <br>
+                    {% endif %}
+                    {% if form.errors %}
+                        {{ form.errors }}
+                        <br>
+                    {% endif %}
+                </div>
+                <table class="table table-bordered" dir="rtl">
+                    <thead id="table_head" class="whitespace: normal">
+
+                    </thead>
+                    <tbody id="table_body">
+
+                    </tbody>
+                </table>
+            </form>
+        </div>
     </div>
-    <!-- /.col -->
+{% endblock %}
+
+{% block card_footer %}
+    <button type="submit" class="btn btn-primary" form="form1">ارسال</button>
 {% endblock %}
 
 {% block body_script %}
     <script>
+        let tr = document.createElement("tr");
+        let th = document.createElement("th");
+
+        tr.setAttribute("id", "tr_head");
+        document.getElementById("table_head").appendChild(tr);
+        document.getElementById("tr_head").appendChild(th);
+
+        {% for presentation in presentations %}
+            th = document.createElement("th");
+            th.innerText = "{{ presentation.subject }}";
+            document.getElementById("tr_head").appendChild(th);
+        {% endfor %}
+
+
+
+
+
+
+
         let count_question = 0;
 
         let div = document.createElement("div");
@@ -74,9 +89,11 @@
 
             div.setAttribute("id", "div_id_" + name_question);
             div.setAttribute("class", "form-group");
-            document.getElementById("card-body").appendChild(div);
+            div.setAttribute("dir", "rtl");
+            document.getElementById("form1").appendChild(div);
             label.setAttribute("for", name_question);
             label.setAttribute("style", "direction: rtl");
+            label.setAttribute("class", "float-right");
             label.innerText = "{{ question }}";
             document.getElementById("div_id_" + name_question).appendChild(label);
             input.setAttribute("id", name_question);
@@ -88,11 +105,9 @@
             input.setAttribute("max", "{{ presentation.lesson.questions.max_score }}");
             input.required = true;
             document.getElementById("div_id_" + name_question).appendChild(input);
-            p.setAttribute("class", "text-primary");
-            p.setAttribute("style", "direction: rtl");
+            p.setAttribute("class", "text-primary text-right");
             p.innerText = "عددی بین {{ presentation.lesson.questions.min_score }} تا {{ presentation.lesson.questions.max_score }} وارد کنید";
             document.getElementById("div_id_" + name_question).appendChild(p);
-            {#TODO add help_text & errors for eich field#}
             count_question++;
         {% endfor %}
 

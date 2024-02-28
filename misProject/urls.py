@@ -19,10 +19,11 @@ from django.urls import path, include
 
 from django.conf.urls.static import static
 from django.conf import settings
-from django.views.generic.base import RedirectView
+
+from misProject import views
 
 urlpatterns = [
-    path('', RedirectView.as_view(pattern_name='score:score_chart'), name='main_page'),
+    path('', views.main_page, name='main_page'),
     path('score/', include('score.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
