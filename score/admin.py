@@ -1,10 +1,11 @@
 from django.contrib import admin
+from import_export.admin import ExportActionModelAdmin
 
 from score import models, forms
 
 
 @admin.register(models.Question)
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(ExportActionModelAdmin):
     search_fields = [i.name for i in models.Question._meta.fields if i.name != 'id']
     list_per_page = 10
     list_display = [i.name for i in models.Question._meta.fields if i.name not in ['id', 'question_list']]
@@ -19,7 +20,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Lesson)
-class LessonAdmin(admin.ModelAdmin):
+class LessonAdmin(ExportActionModelAdmin):
     search_fields = [i.name for i in models.Lesson._meta.fields if i.name != 'id']
     list_per_page = 10
     list_display = [i.name for i in models.Lesson._meta.fields if i.name != 'id']
@@ -33,7 +34,7 @@ class LessonAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Presentation)
-class PresentationAdmin(admin.ModelAdmin):
+class PresentationAdmin(ExportActionModelAdmin):
     list_filter = ['lesson', 'is_active']
     search_fields = [i.name for i in models.Presentation._meta.fields if i.name != 'id']
     list_per_page = 10
@@ -50,3 +51,17 @@ class PresentationAdmin(admin.ModelAdmin):
             obj.creator = request.user
         obj.latest_modifier = request.user
         super(PresentationAdmin, self).save_model(request, obj, form, change)
+
+
+@admin.register(models.Score)
+class ScoreAdmin(ExportActionModelAdmin):
+    list_per_page = 10
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

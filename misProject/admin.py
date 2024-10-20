@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
+from import_export.admin import ExportActionModelAdmin
 
 admin.site.unregister(get_user_model())
 admin.site.unregister(Group)
@@ -10,7 +11,7 @@ admin.site.unregister(Group)
 
 # Customizing the admin page in the management panel
 @admin.register(get_user_model())
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(UserAdmin, ExportActionModelAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
@@ -23,5 +24,5 @@ class CustomUserAdmin(UserAdmin):
 
 # Customizing the admin page in the management panel
 @admin.register(Group)
-class CustomGroupAdmin(GroupAdmin):
+class CustomGroupAdmin(GroupAdmin, ExportActionModelAdmin):
     exclude = ('permissions',)
