@@ -11,80 +11,93 @@ from score import models, forms
 
 
 # Show the list of courses
+@login_required
 def lessons_list(request):
     lessons = models.Lesson.objects.all()
     if lessons:
         args = {'lessons': lessons}
         return render(request, 'score/lessons_list.html', args)
     else:
-        return render(request, 'score/lessons_list.html')
+        args = {
+            'message': 'درسی یافت نشد.',
+            'url': reverse('score:score_chart'),
+        }
+        return render(request, 'score/message_redirect.html', args)
+
+
+# Display the list of presentations of each course
+@login_required
+def presentations_list(request, group_id):
+    # Raise 404 error when not available
+    lesson = get_object_or_404(models.Lesson, group_id=group_id)
+    # Examining student membership in the course
+    if User.objects.filter(Q(groups__id=group_id) & Q(id=request.user.id)):
+        # Checking the existence and activeness of the presentation
+        presentations = models.Presentation.objects.filter(Q(lesson__group_id=group_id) & Q(is_active=True))
+        if presentations:
+            args = {'lesson': lesson, 'presentations': presentations}
+            return render(request, 'score/presentations_list.html', args)
+        else:
+            args = {
+                'message': 'ارائه ای یافت نشد.',
+                'url': reverse('score:lessons'),
+            }
+    else:
+        args = {
+            'message': 'شما عضو این درس نمی باشید.',
+            'url': reverse('score:lessons'),
+        }
+    return render(request, 'score/message_redirect.html', args)
 
 
 # Register points for presentation
 @method_decorator(login_required, name="dispatch")
 class RegisterScore(View):
     def get(self, *args, **kwargs):
-        # Raise 404 error when not available
-        lesson = get_object_or_404(models.Lesson, group_id=self.kwargs['group_id'])
-        # If the question set was not defined for the course
-        if not lesson.questions:
-            args = {
-                'message': 'سوالات ارزیابی، برای درس تعریف نشده است.',
-                'url': reverse('score:lessons'),
-            }
-            return render(self.request, 'score/message_redirect.html', args)
-        # Get active presentations inside this lesson
-        presentations = models.Presentation.objects.filter(Q(lesson_id=lesson.id) & Q(is_active=True))
-        if not presentations:
-            args = {
-                'message': 'ارائه ای یافت نشد.',
-                'url': reverse('score:lessons'),
-            }
-            return render(self.request, 'score/message_redirect.html', args)
+        # Checking the existence and activeness of the presentation
+        presentation = get_object_or_404(models.Presentation, Q(id=self.kwargs['presentation_id']) & Q(is_active=True))
+        # If the presentation id does not match the lesson id
+        if presentation.lesson.group.id != self.kwargs['group_id']:
+            raise Http404()
         # Examining student membership in the course
         this_user = User.objects.filter(Q(groups__id=self.kwargs['group_id']) & Q(id=self.request.user.id))
         if this_user:
-            presentations_absent = []  # The id of the presentations I was absent
-            args = {
-                'score_list': {}
-            }
-            # Get all the points that the user has registered in this course
-            scores = models.Score.objects.filter(
-                Q(presentation__lesson_id=lesson.id) & Q(score_giver__user_id=self.request.user.id))
-            for presentation in presentations:
-                # Checking the presence of scores with the desired specifications (for editing)
-                score_instance = scores.filter(presentation_id=presentation.id)
-                # Specify the id of the presentations that the person was absent, to block scoring access
-                absent_users = presentation.absent.all()
-                if this_user[0] in absent_users:
-                    presentations_absent.append(presentation.id)
-                    # Delete the user's points to the course in which he was absent
-                    score_instance.delete()
-                # Score editing mode
-                if score_instance:
-                    args['score_list'][presentation.id] = score_instance[0].score_list
-            # If all presentations have been absent
-            if presentations.count() == len(presentations_absent):
+            # Lack of access to scoring for absentees
+            absent_users = presentation.absent.all()
+            if this_user[0] not in absent_users:
+                # Get information from the database to display on the site
+                if presentation.lesson.questions:  # If the question is defined for the lesson
+                    questions = presentation.lesson.questions.question_list
+                    preferential = models.Preferential.objects.get(
+                        Q(user_id=self.request.user.id) & Q(lesson_id=presentation.lesson.id))
+                    score_balance = preferential.score_balance
+                    score_balance_dict = {}
+                    for key in range(1, len(score_balance) + 1):
+                        score_balance_dict[key] = score_balance[key - 1]
+                    args = {
+                        'presentation': presentation,
+                        'questions': questions,
+                        'score_balances': score_balance_dict,
+                    }
+                    # Checking the presence of scores with the desired specifications (for editing)
+                    score_instance = models.Score.objects.filter(Q(presentation_id=self.kwargs['presentation_id']) & Q(
+                        score_giver__user_id=self.request.user.id))
+                    # Score editing mode
+                    if score_instance:
+                        args['score_list'] = score_instance[0].score_list
+                    return render(self.request, 'score/register_score.html', args)
+                else:
+                    args = {
+                        'message': 'سوالات ارزیابی، برای درس تعریف نشده است.',
+                        'url': reverse('score:presentations', kwargs={'group_id': self.kwargs['group_id']}),
+                    }
+                    return render(self.request, 'score/message_redirect.html', args)
+            else:
                 args = {
-                    'message': 'شما تمام ارائه ها را غایب بودبد و مجاز به امتیازدهی نمی باشید.',
-                    'url': reverse('score:lessons'),
+                    'message': 'شما در زمان این ارائه غایب بودید و مجاز به امتیاز دهی نمی باشید.',
+                    'url': reverse('score:presentations', kwargs={'group_id': self.kwargs['group_id']}),
                 }
                 return render(self.request, 'score/message_redirect.html', args)
-            # Get information from the database to display on the site
-            questions = lesson.questions.question_list
-            preferential = models.Preferential.objects.get(Q(user_id=self.request.user.id) & Q(lesson_id=lesson.id))
-            score_balance = preferential.score_balance
-            score_balance_dict = {}
-            for key in range(1, len(score_balance) + 1):
-                score_balance_dict[key] = score_balance[key - 1]
-            # Lack of access to scoring for absentees
-            presentations = presentations.exclude(id__in=presentations_absent)
-            args['presentations'] = presentations
-            args['questions'] = questions
-            args['score_balances'] = score_balance_dict
-            args['has_card'] = True
-            args['has_footer'] = True
-            return render(self.request, 'score/register_score.html', args)
         else:
             args = {
                 'message': 'شما عضو این درس نمی باشید.',
@@ -95,7 +108,7 @@ class RegisterScore(View):
     def post(self, *args, **kwargs):
         posted_data = self.request.POST
         # Build a list (dict_values) of points received from request.POST
-        score_text = len({key: value for key, value in posted_data.items() if 'question' in key})
+        score_text = {key: value for key, value in posted_data.items() if 'question' in key}.values()
         new_score_list = [int(i) for i in list(score_text)]
         score_instance = models.Score.objects.filter(
             Q(presentation_id=self.kwargs['presentation_id']) & Q(score_giver__user_id=self.request.user.id))
@@ -115,7 +128,7 @@ class RegisterScore(View):
             form.save()
             args = {
                 'message': 'اطلاعات ذخیره شد.',
-                'url': reverse('score:presentations', kwargs={'group_id': self.kwargs['group_id']}),
+                'url': reverse('score:score_chart'),
             }
             return render(self.request, 'score/message_redirect.html', args)
         presentation = models.Presentation.objects.get(id=self.kwargs['presentation_id'])
@@ -132,8 +145,6 @@ class RegisterScore(View):
             'score_balances': score_balance_dict,
             'score_list': new_score_list,
             'form': form,
-            'has_card': True,
-            'has_footer': True,
         }
         return render(self.request, 'score/register_score.html', args)
 
