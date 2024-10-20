@@ -11,18 +11,10 @@ from score import models, forms
 
 
 # Show the list of courses
-@login_required
 def lessons_list(request):
     lessons = models.Lesson.objects.all()
-    if lessons:
-        args = {'lessons': lessons}
-        return render(request, 'score/lessons_list.html', args)
-    else:
-        args = {
-            'message': 'درسی یافت نشد.',
-            'url': reverse('score:score_chart'),
-        }
-        return render(request, 'score/message_redirect.html', args)
+    args = {'lessons': lessons}
+    return render(request, 'score/lessons_list.html', args)
 
 
 # Display the list of presentations of each course
@@ -129,7 +121,7 @@ class RegisterScore(View):
             form.save()
             args = {
                 'message': 'اطلاعات ذخیره شد.',
-                'url': reverse('score:score_chart'),
+                'url': reverse('main_page'),
             }
             return render(self.request, 'score/message_redirect.html', args)
         presentation = models.Presentation.objects.get(id=self.kwargs['presentation_id'])
@@ -141,7 +133,7 @@ class RegisterScore(View):
         for key in range(1, len(score_balance) + 1):
             score_balance_dict[key] = score_balance[key - 1]
         args = {
-            'presentation': presentation,
+            'presentation': presentation[0],
             'questions': questions,
             'score_balances': score_balance_dict,
             'score_list': new_score_list,
