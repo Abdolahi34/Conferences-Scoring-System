@@ -169,8 +169,9 @@ LOGGING = {
     },
 }
 
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/score/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 

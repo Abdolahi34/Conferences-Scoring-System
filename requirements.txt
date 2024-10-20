@@ -4,3 +4,4 @@ psycopg2-binary==2.9.9
 django-jsonform==2.21.2
 django_import_export==3.3.4
 django-sql-explorer==5.3
+ippanel==2.0.7

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <title>ورود</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'misProject/login_page/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'misProject/login_page/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'misProject/login_page/fonts/iconic/css/material-design-iconic-font.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'misProject/login_page/vendor/animate/animate.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'misProject/login_page/vendor/css-hamburgers/hamburgers.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'misProject/login_page/vendor/animsition/css/animsition.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'misProject/login_page/vendor/select2/select2.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'misProject/login_page/vendor/daterangepicker/daterangepicker.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'misProject/login_page/css/util.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'misProject/login_page/css/main.css' %}">
+    <!--===============================================================================================-->
+    <link href="{% static 'misProject/login_page/css/Lalezar_font.css' %}" rel="stylesheet">
+    <style>
+        .hide {
+            display: none;
+        }
+
+        .lalezar-regular {
+            font-family: "Lalezar", system-ui;
+            font-weight: 400;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+
+<div class="limiter">
+    <div class="container-login100" style="background-image: url('{% static "misProject/login_page/bg-01.jpg" %}');">
+        <div class="wrap-login100 p-l-55 p-r-55 p-t-65" style="padding-bottom: 20px">
+            <form id="form1" class="login100-form validate-form" method="post">
+                <input type="hidden" name="verification_code_hash" value="{{ verification_code_hash }}">
+                {% csrf_token %}
+                <span class="login100-form-title p-b-49 lalezar-regular">
+						ورود
+					</span>
+
+                <div id="level_1">
+                    <div class="wrap-input100 validate-input m-b-23" data-validate="شماره تماس اجباری است">
+                        <span class="label-input100 lalezar-regular">شماره موبایل</span>
+                        <input type="tel" id="phone" class="input100 lalezar-regular" name="phone"
+                               placeholder="شماره موبایل را به این صورت تایپ کنید (09120000000)" pattern="[0-9]{11}"
+                               required maxlength="11">
+                        <span class="focus-input100" data-symbol="&#xf206;"></span>
+                    </div>
+                </div>
+
+                <div id="level_2" class="hide">
+                    <div class="wrap-input100 validate-input" data-validate="کد تایید را وارد کنید">
+                        <span class="label-input100 lalezar-regular">کد تایید</span>
+                        <input type="number" class="input100 lalezar-regular" name="verification_code"
+                               placeholder="کد تایید را وارد کنید" pattern="[0-9]{4}" required max="9998"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4)">
+                        <span class="focus-input100" data-symbol="&#xf190;"></span>
+                    </div>
+                    <br>
+                </div>
+
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button id="form_button" class="login100-form-btn lalezar-regular" onclick="submit_form()">
+                            بعدی
+                        </button>
+                    </div>
+                </div>
+
+                <div id="forget_pass">
+                    <br>
+                    <div class="text-right p-t-8 p-b-31">
+                        <a class="lalezar-regular" href="{% url 'password_reset' %}">
+                            رمز عبور تان را فراموش کردید؟
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div id="dropDownSelect1"></div>
+
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/vendor/animsition/js/animsition.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/vendor/bootstrap/js/popper.js' %}"></script>
+<script src="{% static 'misProject/login_page/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/vendor/daterangepicker/moment.min.js' %}"></script>
+<script src="{% static 'misProject/login_page/vendor/daterangepicker/daterangepicker.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/vendor/countdowntime/countdowntime.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'misProject/login_page/js/main.js' %}"></script>
+
+<script>
+    {% if level == 2 %}
+        var element = document.getElementById('level_1');
+        element.classList.add("hide");
+        var element2 = document.getElementById('level_2');
+        element2.classList.remove("hide");
+        var element3 = document.getElementById('forget_pass');
+        element3.classList.add("hide");
+        alert('کد تایید ارسال شد');
+        var element4 = document.getElementById('phone');
+        element4.setAttribute('value', {{ phone }});
+        document.getElementById("form_button").innerHTML = 'ارسال';
+    {% endif %}
+    function submit_form() {
+        document.getElementById('form1').submit();
+    }
+</script>
+
+</body>
+</html>
