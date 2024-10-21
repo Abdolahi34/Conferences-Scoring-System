@@ -20,7 +20,7 @@
                     <table class="table table-striped projects">
                         <thead>
                         <tr>
-                            <th class="text-2xl" style="text-align: right; direction: rtl">
+                            <th class="text-2xl noto-naskh-arabic-regular" style="text-align: right; direction: rtl">
                                 نام درس
                             </th>
                         </tr>
@@ -29,7 +29,8 @@
                         {% for lesson in lessons %}
                             <tr>
                                 <td style="text-align: right; direction: rtl">
-                                    <a class="text-lg" href="{% url 'score:presentations' group_id=lesson.group.id %}">
+                                    <a class="text-lg noto-naskh-arabic-regular"
+                                       href="{% url 'score:presentations' group_id=lesson.group.id %}">
                                         {{ lesson }}
                                     </a>
                                 </td>

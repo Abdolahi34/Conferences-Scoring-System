@@ -8,16 +8,17 @@
     <div class="col-12">
         <div class="card card-primary">
             <div class="card-header">
-                <h3 class="card-title">سوالات</h3>
+                <h3 class="card-title noto-naskh-arabic-regular" style="font-size: 1.5rem">سوالات</h3>
             </div>
             <!-- /.card-header -->
             <div class="card-body">
                 <div class="row margin">
                     <div dir="rtl" class="callout callout-info">
-                        <h5>امتیاز باقی مانده شما</h5>
+                        <h5 class="noto-naskh-arabic-regular" style="font-weight: bold">امتیاز باقی مانده شما</h5>
 
                         {% for key, value in score_balances.items %}
-                            <p>امتیاز شما در سوال {{ key }} : <b style="font-size: large">{{ value }}</b></p>
+                            <p class="noto-naskh-arabic-regular">امتیاز شما در سوال {{ key }} : <b
+                                    style="font-size: large">{{ value }}</b></p>
                         {% endfor %}
                     </div>
                     <div class="col-sm-6" dir="rtl">
@@ -38,7 +39,7 @@
                             </div>
                             <!-- /.card-body -->
                             <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">ارسال</button>
+                                <button type="submit" class="btn btn-primary noto-naskh-arabic-regular">ارسال</button>
                             </div>
                         </form>
                     </div>
@@ -76,6 +77,7 @@
             div.setAttribute("class", "form-group");
             document.getElementById("card-body").appendChild(div);
             label.setAttribute("for", name_question);
+            label.setAttribute("class", "noto-naskh-arabic-regular");
             label.setAttribute("style", "direction: rtl");
             label.innerText = "{{ question }}";
             document.getElementById("div_id_" + name_question).appendChild(label);
@@ -88,7 +90,7 @@
             input.setAttribute("max", "{{ presentation.lesson.questions.max_score }}");
             input.required = true;
             document.getElementById("div_id_" + name_question).appendChild(input);
-            p.setAttribute("class", "text-primary");
+            p.setAttribute("class", "text-primary noto-naskh-arabic-regular");
             p.setAttribute("style", "direction: rtl");
             p.innerText = "عددی بین {{ presentation.lesson.questions.min_score }} تا {{ presentation.lesson.questions.max_score }} وارد کنید";
             document.getElementById("div_id_" + name_question).appendChild(p);
