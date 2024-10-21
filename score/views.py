@@ -133,7 +133,7 @@ class RegisterScore(View):
         for key in range(1, len(score_balance) + 1):
             score_balance_dict[key] = score_balance[key - 1]
         args = {
-            'presentation': presentation[0],
+            'presentation': presentation,
             'questions': questions,
             'score_balances': score_balance_dict,
             'score_list': new_score_list,
