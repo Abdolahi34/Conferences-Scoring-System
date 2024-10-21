@@ -57,7 +57,7 @@ def login_page(request):
             if verification_code_hash == request.POST['verification_code_hash']:
                 phone = '0' + request.POST['phone']
                 user = User.objects.filter(username=phone)
-                login(request, user[0])
+                login(request, user[0], backend='django.contrib.auth.backends.ModelBackend')
                 return render(request, 'score/message_redirect.html',
                               {'url': reverse('score:lessons'), 'message': 'خوش آمدید'})
             else:

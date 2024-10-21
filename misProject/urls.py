@@ -27,8 +27,9 @@ urlpatterns = [
     path('login/', views.login_page, name='login_page'),
     path('score/', include('score.urls')),
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('allauth.urls')),
     path('sql-explorer/', include('explorer.urls')),
+    path('accounts2/', include('django.contrib.auth.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

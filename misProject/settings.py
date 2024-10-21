@@ -32,22 +32,38 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 # Application definition
 
-INSTALLED_APPS = [
+THIRD_PARTY_APPS_BEFORE_DJANGO = [
+    'jazzmin',
+]
+
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+THIRD_PARTY_APPS = [
     'django_jsonform',
     'import_export',
     'explorer',
+    "allauth_ui",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.github",
+    "widget_tweaks",
+    "slippers",
+]
+
+LOCAL_APPS = [
     'misProject',
     'score.apps.ScoreConfig',
 ]
 
-EXPLORER_CONNECTIONS = {'Default': 'default'}
-EXPLORER_DEFAULT_CONNECTION = 'default'
+INSTALLED_APPS = THIRD_PARTY_APPS_BEFORE_DJANGO + DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'misProject.urls'
@@ -115,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'fa-ir'
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Tehran'
 
@@ -143,6 +160,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'assets')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/score/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+
+if not DEBUG:
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS', '') != 'False'
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', '') != 'False'
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', '') != 'False'
+    CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', '') != 'False'
+    SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', '') != 'False'
+
 # Settings for creating errors.log file
 LOGGING = {
     'version': 1,
@@ -169,16 +200,37 @@ LOGGING = {
     },
 }
 
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/score/'
-LOGOUT_REDIRECT_URL = '/login/'
+# django-sql-explorer module settings
+EXPLORER_CONNECTIONS = {'Default': 'default'}
+EXPLORER_DEFAULT_CONNECTION = 'default'
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+# AllAuth settings
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
 
-if not DEBUG:
-    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS'))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS', '') != 'False'
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', '') != 'False'
-    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', '') != 'False'
-    CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', '') != 'False'
-    SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', '') != 'False'
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+
+ALLAUTH_UI_THEME = "light"
+
+SILENCED_SYSTEM_CHECKS = ["slippers.E001"]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'github': {
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': os.getenv('SOCIALACCOUNT_PROVIDERS_CLIENT_ID'),
+            'secret': os.getenv('SOCIALACCOUNT_PROVIDERS_SECRET'),
+            'key': ''
+        }
+    }
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = BASE_DIR / 'emails'
